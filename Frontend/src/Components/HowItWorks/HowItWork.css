@@ -1,0 +1,92 @@
+.page-section {
+    scroll-margin-top: 80px;
+}
+.how {
+    padding: 0 32px 80px;
+}
+
+.section-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+.section-tag {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: #7B2FFF;
+}
+.section-h {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 38px;
+    font-weight: 700;
+    letter-spacing: -1px;
+    line-height: 1.15;
+    margin-bottom: 12px;
+}
+
+.section-sub {
+    color: #7B7D9A;
+    font-size: 15px;
+    max-width: 420px;
+    line-height: 1.7;
+    margin-bottom: 48px;
+}
+.steps {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 20px;
+    margin-top: 48px;
+}
+.step{
+    background: #13141F;
+    border: 1px solid #1E1F30;
+    border-radius: 16px;
+    padding: 24px 20px;
+    position: relative;
+}
+.step-num {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 48px;
+    font-weight: 700;
+    color: #1E1F30;
+    position: absolute;
+    top: 16px;
+    right: 20px;
+    line-height: 1;
+}
+.step-icon.v {
+    background: #7B2FFF22;
+}
+.step-icon.c {
+    background: #FF4D6D22;
+}
+.step-icon.m {
+    background: #00E5C322;
+}
+.step-icon.g {
+    background: #FFD16622;
+}
+.step-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 16px;
+    font-size: 20px;
+}
+.step-title {
+    font-weight: 700;
+    font-size: 15px;
+    margin-bottom: 8px;
+}
+.step-desc {
+    font-size: 13px;
+    color: #7B7D9A;
+    line-height: 1.6;
+}
+

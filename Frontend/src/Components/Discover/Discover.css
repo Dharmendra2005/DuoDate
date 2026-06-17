@@ -1,0 +1,343 @@
+.section {
+    padding: 0 32px 80px;
+}
+
+.section-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.section-tag {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: #7B2FFF;
+}
+
+.section-h {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 38px;
+    font-weight: 700;
+    letter-spacing: -1px;
+    line-height: 1.15;
+    margin-bottom: 12px;
+}
+
+.section-sub {
+    color: #7B7D9A;
+    font-size: 15px;
+    max-width: 420px;
+    line-height: 1.7;
+    margin-bottom: 48px;
+}
+
+.swipe-arena {
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
+    flex-wrap: wrap;
+}
+
+.duo-stack {
+    flex: 1;
+    min-width: 260px;
+}
+
+.duo-label {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: #7B7D9A;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.duo-badge {
+    padding: 3px 10px;
+    border-radius: 100px;
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.duo-badge.you {
+    background: #7B2FFF22;
+    color: #7B2FFF;
+    border: 1px solid #7B2FFF44;
+}
+
+.profile-card {
+    background: #1A1B2E;
+    border: 1px solid #2A2B40;
+    border-radius: 20px;
+    overflow: hidden;
+    position: relative;
+    cursor: pointer;
+    transition: transform 0.2s, border-color 0.2s;
+}
+
+.card-img-1 {
+    background: linear-gradient(135deg, #1a1040, #3d1a6e);
+}
+
+.card-img-placeholder {
+    height: 180px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 48px;
+    position: relative;
+}
+
+.card-body {
+    padding: 16px;
+}
+.card-name-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 6px;
+}
+.card-name {
+    font-weight: 700;
+    font-size: 16px;
+}
+.card-age {
+    font-size: 13px;
+    color: #7B7D9A;
+    font-weight: 500;
+}
+
+.card-tags {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+}
+.tag.v {
+    background: #7B2FFF22;
+    color: #9B6FFF;
+    border: 1px solid #7B2FFF33;
+}
+.tag.m {
+    background: #00E5C322;
+    color: #00E5C3;
+    border: 1px solid #00E5C333;
+}
+.tag.g {
+    background: #FFD16622;
+    color: #FFD166;
+    border: 1px solid #FFD16633;
+}
+.card-dist {
+    font-size: 12px;
+    color: #7B7D9A;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+i {
+    font-style: italic;
+}
+.card-dist i {
+    font-size: 13px;
+    color: #00E5C3;
+}
+.profile-card {
+    background: #1A1B2E;
+    border: 1px solid #2A2B40;
+    border-radius: 20px;
+    overflow: hidden;
+    position: relative;
+    cursor: pointer;
+    transition: transform 0.2s, border-color 0.2s;
+}
+
+.card-offset {
+    position: relative;
+    margin-top: -160px;
+    margin-left: 20px;
+    opacity: 0.7;
+    transform: scale(0.94);
+}
+
+.card-img-placeholder {
+    height: 180px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 48px;
+    position: relative;
+}
+
+@font-face {
+    font-family: 'Plus Jakarta Sans';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/plusjakartasans/v12/LDIoaomQNQcsA88c7O9yZ4KMCoOg4Ko70yyygA.woff2) format('woff2');
+    unicode-range: U +0460 -052F, U +1C80 -1C8A, U +20B4, U +2DE0 -2DFF, U + A640-A69F, U + FE2E-FE2F;
+}
+.card-img-2 {
+    background: linear-gradient(135deg, #401020, #6e1a3d);
+}
+
+.card-img-placeholder.blurred {
+    filter: blur(8px);
+}
+
+.blur-label {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #00000099;
+    padding: 4px 12px;
+    border-radius: 100px;
+    font-size: 10px;
+    color: #00E5C3;
+    font-weight: 700;
+    letter-spacing: 1px;
+    white-space: nowrap;
+}
+
+
+.match-zone {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    padding: 0 20px;
+    min-width: 160px;
+}
+.match-indicator {
+    background: #00E5C311;
+    border: 1px solid #00E5C333;
+    border-radius: 12px;
+    padding: 12px 16px;
+    text-align: center;
+    width: 100%;
+}
+
+.match-indicator-title {
+    font-size: 11px;
+    font-weight: 700;
+    color: #00E5C3;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+}
+.match-indicator-val {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 24px;
+    font-weight: 700;
+    color: #00E5C3;
+}
+.match-indicator-sub {
+    font-size: 10px;
+    color: #7B7D9A;
+    margin-top: 2px;
+}
+.vs-divider {
+    width: 56px;
+    height: 56px;
+    background: #1A1B2E;
+    border: 2px solid #2A2B40;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: #7B7D9A;
+}
+.swipe-btn {
+    padding: 12px 0;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    border: none;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    width: 100%;
+    transition: transform 0.15s;
+}
+.swipe-btn-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+}
+.swipe-btn.nope {
+    background: #1A1B2E;
+    border: 1px solid #2A2B40;
+    color: #7B7D9A;
+}
+.swipe-btn.like {
+    background: linear-gradient(135deg, #7B2FFF, #FF4D6D);
+    color: white;
+}
+.swipe-btn.super {
+    background: #FFD16622;
+    border: 1px solid #FFD16644;
+    color: #FFD166;
+}
+
+.duo-stack {
+    flex: 1;
+    min-width: 260px;
+}
+.duo-label {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: #7B7D9A;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.duo-badge.them {
+    background: #FF4D6D22;
+    color: #FF4D6D;
+    border: 1px solid #FF4D6D44;
+}
+.profile-card.matched {
+    border-color: #00E5C344;
+    box-shadow: 0 0 0 1px #00E5C322;
+}
+
+.profile-card {
+    background: #1A1B2E;
+    border: 1px solid #2A2B40;
+    border-radius: 20px;
+    overflow: hidden;
+    position: relative;
+    cursor: pointer;
+    transition: transform 0.2s, border-color 0.2s;
+}
+.card-img-3 {
+    background: linear-gradient(135deg, #102040, #1a5070);
+}
+
+.card-img-placeholder {
+    height: 180px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 48px;
+    position: relative;
+}
+
+
+.card-img-4 {
+    background: linear-gradient(135deg, #104020, #1a6040);
+}

@@ -1,0 +1,65 @@
+.footer-cta {
+    margin: 0 32px 60px;
+    background: #13141F;
+    border: 1px solid #2A2B40;
+    border-radius: 24px;
+    padding: 60px 40px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.footer-cta-accent {
+    position: absolute;
+    width: 300px;
+    height: 300px;
+    border-radius: 50%;
+    top: -100px;
+    right: -80px;
+    background: radial-gradient(circle, #7B2FFF22, transparent 70%);
+    pointer-events: none;
+}
+
+.footer-cta-accent2 {
+    position: absolute;
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    bottom: -60px;
+    left: -40px;
+    background: radial-gradient(circle, #FF4D6D22, transparent 70%);
+    pointer-events: none;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #7B2FFF, #FF4D6D);
+    padding: 14px 32px;
+    border-radius: 100px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    border: none;
+    color: white;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    letter-spacing: 0.3px;
+}
+.footer-bar {
+    padding: 24px 32px;
+    border-top: 1px solid #1E1F30;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: gap;
+    gap: 16px;
+}
+
+.footer-logo {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.footer-note {
+    font-size: 12px;
+    color: #7B7D9A;
+}

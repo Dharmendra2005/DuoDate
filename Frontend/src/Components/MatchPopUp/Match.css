@@ -1,0 +1,67 @@
+.match-popup {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: #00000088;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+}
+.match-modal {
+    background: #13141F;
+    border: 1px solid #00E5C344;
+    border-radius: 24px;
+    padding: 40px 32px;
+    text-align: center;
+    max-width: 340px;
+    width: 90%;
+}
+
+.match-emoji {
+    font-size: 52px;
+    margin-bottom: 16px;
+}
+
+.match-modal-duo {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-bottom: 28px;
+}
+
+.match-modal-av {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: 700;
+    border: 3px solid;
+}
+
+.match-modal-av.a {
+    background: #7B2FFF22;
+    border-color: #7B2FFF;
+    color: #9B6FFF;
+}
+
+.match-modal-av.b {
+    background: #FF4D6D22;
+    border-color: #FF4D6D;
+    color: #FF8099;
+}
+
+.match-close {
+    background: linear-gradient(135deg, #7B2FFF, #FF4D6D);
+    padding: 13px 32px;
+    border-radius: 100px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    border: none;
+    color: white;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    width: 100%;
+}

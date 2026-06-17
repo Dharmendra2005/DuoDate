@@ -1,0 +1,91 @@
+@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap");
+
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 15px 25px;
+  border-bottom: 1px solid #1e1f30;
+  background: #0b0c14;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.nav-acc {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.nav-acc p {
+  margin: 0;
+  font-size: 14px;
+  color: #7b7d9a;
+}
+
+.nav-logo {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.nav-logo span:first-child {
+  color: #ff4d6d;
+}
+
+.nav-logo span:last-child {
+  color: #7b2fff;
+}
+
+.nav-links {
+  display: flex;
+  gap: 42px;
+  align-items: center;
+}
+
+.nav-links a {
+  color: #7b7d9a;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.nav-links a:hover {
+  color: #f0f1ff;
+}
+
+.nav-links a.active {
+  color: #f0f1ff;
+}
+
+.nav-cta {
+  background: linear-gradient(135deg, #7b2fff, #ff4d6d);
+  font-family: "Plus Jakarta Sans", sans-serif;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(123, 47, 255, 0.2);
+}
+
+.nav-cta:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(123, 47, 255, 0.3);
+}
+
+.nav-cta:active {
+  transform: translateY(1px);
+}
+
+button {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  border-radius: 100px;
+  padding: 8px 16px;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}

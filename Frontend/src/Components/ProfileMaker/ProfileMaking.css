@@ -1,0 +1,295 @@
+/* ---------- Page Shell ---------- */
+.profile-maker-page-wrapper {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background: #949cd4;
+    min-height: 100vh;
+}
+
+.profile-maker-shell {
+    min-height: calc(100vh - 70px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2.5rem 1rem;
+    box-sizing: border-box;
+}
+
+.onboarding-transition {
+    width: 100%;
+    max-width: 520px;
+    box-sizing: border-box;
+}
+
+/* Forms & Cards */
+.onboarding-transition form,
+.onboarding-transition > div {
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    padding: 0;
+    box-shadow: none;
+}
+
+/* ---------- Typography ---------- */
+.onboarding-transition h2 {
+    margin: 0 0 24px;
+    font-size: 32px;
+    font-weight: 700;
+    color: #1A1B2E;
+    line-height: 1.25;
+}
+
+.onboarding-transition h3 {
+    margin: 24px 0 8px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #1A1B2E;
+}
+
+.onboarding-transition p {
+    color: #4A4B60;
+    font-size: 15px;
+    line-height: 1.6;
+    margin-bottom: 24px;
+}
+
+.onboarding-transition p:first-child {
+    font-size: 11px;
+    font-weight: 600;
+    color: #7B2FFF;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+}
+
+/* ---------- Question Options (Checkboxes & Radios) ---------- */
+.onboarding-connection-type-content,
+.iWe2AqDwuHRCo8EDLIvX {
+    display: grid;
+    gap: 12px;
+}
+
+.oknf-checkbox,
+label {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 18px;
+    margin-bottom: 0; /* Reset label margins */
+    background: #e2e4ed;
+    border: 1px solid #e2e4ed;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: #4A4B60;
+    font-weight: 500;
+    font-size: 15px;
+    box-sizing: border-box;
+}
+
+.oknf-checkbox:hover,
+label:hover {
+    border-color: #7B2FFF;
+    background: #d5daf2;
+}
+
+/* Active/Checked Style helper if checked */
+.oknf-checkbox input:checked + .oknf-checkbox-label,
+label input:checked {
+    color: #1A1B2E;
+}
+
+.oknf-clickable-inner {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.oknf-checkbox input[type="checkbox"],
+input[type="radio"] {
+    width: 18px;
+    height: 18px;
+    accent-color: #7B2FFF;
+    cursor: pointer;
+}
+
+.oknf-checkbox-label {
+    font-size: 15px;
+    font-weight: 500;
+    color: #4A4B60;
+}
+
+/* ---------- Select dropdowns ---------- */
+select {
+    width: 100%;
+    max-width: 200px;
+    padding: 13px 16px;
+    border: 1px solid #e2e4ed;
+    background: #e2e4ed;
+    border-radius: 12px;
+    font-size: 15px;
+    color: #4A4B60;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.18s;
+}
+
+select:focus {
+    border-color: #7B2FFF;
+}
+
+/* ---------- Textarea ---------- */
+textarea {
+    width: 100%;
+    min-height: 150px;
+    resize: vertical;
+    padding: 14px 16px;
+    background: #e2e4ed;
+    border: 1px solid #e2e4ed;
+    border-radius: 12px;
+    font-size: 15px;
+    line-height: 1.6;
+    color: #4A4B60;
+    font-family: inherit;
+    box-sizing: border-box;
+    outline: none;
+    transition: border-color 0.18s;
+}
+
+textarea:focus {
+    border-color: #7B2FFF;
+}
+
+/* ---------- Photo Upload Grid ---------- */
+.photo-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.photo-box {
+    aspect-ratio: 1;
+    border: 2px dashed #cecfd6;
+    background: #e2e4ed;
+    border-radius: 12px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    overflow: hidden;
+    transition: all 0.25s ease;
+}
+
+.photo-box:hover {
+    border-color: #7B2FFF;
+    background: #d5daf2;
+}
+
+.photo-box label {
+    background: transparent;
+    border: none;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+}
+
+.photo-box label span {
+    font-size: 20px;
+    color: #7B2FFF;
+}
+
+.photo-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* ---------- Action & Navigation Buttons ---------- */
+.onboarding-actions {
+    margin-top: 32px;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+/* Next / Continue (Primary) */
+.onboarding-actions button:last-child,
+.onboarding-actions-next {
+    padding: 14px 28px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #7B2FFF, #FF4D6D);
+    color: #fff;
+    font-size: 15px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.15s, transform 0.12s;
+}
+
+.onboarding-actions button:last-child:hover,
+.onboarding-actions-next:hover {
+    opacity: 0.9;
+}
+
+/* Back / Secondary */
+.onboarding-actions button:first-child {
+    padding: 14px 28px;
+    border-radius: 12px;
+    background: #1A1B2E;
+    color: #7B7D9A;
+    font-size: 15px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.15s;
+}
+
+.onboarding-actions button:first-child:hover {
+    opacity: 0.95;
+}
+
+/* Skip Text Button */
+.onboarding-actions button[type="button"]:only-child,
+.onboarding-actions button:hover:disabled {
+    background: transparent;
+    color: #7B2FFF;
+    border: none;
+    padding: 10px 0;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: color 0.15s;
+}
+
+.onboarding-actions button[type="button"]:only-child:hover {
+    color: #FF4D6D;
+}
+
+/* Links */
+a {
+    color: #7B2FFF;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* Responsive adjustments */
+@media (max-width: 580px) {
+    .photo-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
