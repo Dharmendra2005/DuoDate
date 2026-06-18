@@ -419,6 +419,24 @@ const CreateDuo = () => {
     }
   };
 
+  const handleLeaveDuo = async () => {
+    if (email) {
+      try {
+        const response = await fetch('http://localhost:3000/api/duo/leave', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: email })
+        });
+        if (response.ok) {
+          setDuoStatus('solo');
+          setStep(1);
+        }
+      } catch (err) {
+        console.error("Error leaving duo:", err);
+      }
+    }
+  };
+
   const defaultAvatar = "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=150&q=80";
   const incomingLikes = interestsData.incoming_likes || [];
   const myLikes = interestsData.my_likes || [];
@@ -743,19 +761,18 @@ const CreateDuo = () => {
                   </div>
 
                   {(!discoverDuos || discoverDuos.length === 0 || currentDuoIndex >= discoverDuos.length) ? (
-                    <div style={{
-                      padding: '60px 40px',
-                      textAlign: 'center',
-                      background: 'rgba(255, 255, 255, 0.03)',
-                      borderRadius: '16px',
-                      border: '1px solid rgba(255, 255, 255, 0.05)',
-                      maxWidth: '600px',
-                      margin: '40px auto'
-                    }}>
-                      <div style={{ fontSize: '64px', marginBottom: '20px' }}>✨</div>
-                      <h2 style={{ fontSize: '24px', fontWeight: '600', color: '#fff' }}>Out of Profiles</h2>
-                      <p style={{ color: '#aaa', marginTop: '10px', fontSize: '15px', lineHeight: '1.5' }}>
-                        You've swiped on all available duos in your area. Check back later for new matches!
+                    <div className="radar-scanner-container">
+                      <div className="radar-glow"></div>
+                      <div className="radar-circle">
+                        <img 
+                          src={myProfile?.photos?.[0] ? getPhotoUrl(myProfile.photos[0]) : defaultAvatar} 
+                          alt="Searching..." 
+                          className="radar-avatar" 
+                        />
+                      </div>
+                      <h2 className="radar-title">Searching for duos...</h2>
+                      <p className="radar-text">
+                        Looking for new profiles in your area. Hang tight, matching is in progress!
                       </p>
                     </div>
                   ) : (
@@ -970,10 +987,7 @@ const CreateDuo = () => {
                   )}
 
                   <div className="step-footer text-center" style={{ marginTop: "40px", display: "flex", justifyContent: "center" }}>
-                    <button type="button" className="btn-secondary" onClick={() => {
-                      setStep(1);
-                      setDuoStatus('solo');
-                    }}>← Back to Invite Partner</button>
+                    <button type="button" className="btn-secondary" onClick={handleLeaveDuo}>← Back to Invite Partner</button>
                   </div>
                 </div>
               ) : (
@@ -1084,10 +1098,9 @@ const CreateDuo = () => {
 
                     <div className="step-footer text-center" style={{ display: 'flex', gap: '12px', justifyContent: 'center', marginTop: '24px' }}>
                       <button type="button" className="btn-secondary" onClick={() => setIsMatched(false)}>← Back to Swipe Arena</button>
-                      <button type="button" className="btn-ghost btn-sm" onClick={() => {
+                      <button type="button" className="btn-ghost btn-sm" onClick={async () => {
                         setIsMatched(false);
-                        setStep(1);
-                        setDuoStatus('solo');
+                        await handleLeaveDuo();
                       }}>← Back to Invite Partner</button>
                     </div>
                   </div>

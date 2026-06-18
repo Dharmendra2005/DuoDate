@@ -23,11 +23,14 @@ const HomeHeader = () => {
                 const data = await response.json();
                 if (response.ok) {
                     // Update profile photo
+                    const photo = data.me?.photos?.[0];
+                    if (photo) {
+                        setProfilePhoto(photo.startsWith("http") ? photo : `http://localhost:3000/uploads/${photo}`);
+                    } else {
+                        setProfilePhoto('');
+                    }
+
                     if (data.status === 'in_duo') {
-                        const photo = data.me?.photos?.[0];
-                        if (photo) {
-                            setProfilePhoto(photo.startsWith("http") ? photo : `http://localhost:3000/uploads/${photo}`);
-                        }
                         setHasPendingInvite(false);
                         setIncomingInvite(null);
                     } else if (data.status === 'invite_received') {
