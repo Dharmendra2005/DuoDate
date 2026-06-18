@@ -4,6 +4,14 @@ import './Hero.css'
 
 const Hero = () => {
   const navigate = useNavigate();
+  const handleStartDuo = () => {
+    if (localStorage.getItem("userEmail")) {
+      navigate('/create-duo');
+    } else {
+      navigate('/signup');
+    }
+  };
+
   return (
     <section className="hero">
       <div className="hero-eyebrow">
@@ -23,7 +31,7 @@ const Hero = () => {
         yes — no awkward solo adventures.
       </p>
       <div className="hero-actions">
-        <button className="btn-primary" onClick={() => navigate('/signup')}>Start your duo →</button>
+        <button className="btn-primary" onClick={handleStartDuo}>Start your duo →</button>
         <button id="how-it-works" className="btn-ghost">See how it works</button>
       </div>
       <div className="stats">

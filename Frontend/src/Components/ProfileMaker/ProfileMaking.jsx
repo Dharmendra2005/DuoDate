@@ -114,14 +114,14 @@ const ProfileMaker = () => {
 
       if (response.ok) {
         alert("Onboarding completed successfully! Profile created.");
-        navigate("/");
+        navigate("/create-duo");
       } else {
         alert(resData.message || "Failed to save profile. Please try again.");
       }
     } catch (error) {
       console.error("Profile submission error:", error);
       alert("Note: Connecting to backend failed. Onboarding complete (saved locally for demo).");
-      navigate("/");
+      navigate("/create-duo");
     }
   };
 

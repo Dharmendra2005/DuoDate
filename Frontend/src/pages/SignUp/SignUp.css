@@ -83,7 +83,7 @@ p {
     border-radius: 12px;
     padding: 13px 44px 13px 15px;
     font-size: 15px;
-    color: #F0F1FF;
+    color: black;
     font-family: 'Plus Jakarta Sans', sans-serif;
     outline: none;
     transition: border-color 0.18s;
@@ -137,7 +137,7 @@ i {
     min-width: 16px;
     border-radius: 4px;
     border: 1px solid #e0e1f1;
-    background: #cecfd6;
+    background: #d7daf0;
     margin-top: 2px;
     display: flex;
     align-items: center;
@@ -152,7 +152,7 @@ i {
 
 .dd-box i {
     font-size: 10px;
-    color: #bbacd6;
+    color: #18161b;
     display: none;
 }
 

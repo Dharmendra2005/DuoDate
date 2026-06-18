@@ -32,6 +32,50 @@
   color: #7b2fff;
 }
 
+.home-nav-left-container {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+}
+
+.home-nav-tabs {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.home-nav-tab {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  color: #7B7D9A;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  padding: 6px 0;
+  user-select: none;
+}
+
+.home-nav-tab:hover {
+  color: #F0F1FF;
+}
+
+.home-nav-tab.active {
+  color: #F0F1FF;
+}
+
+.home-nav-tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #7b2fff, #ff4d6d);
+  border-radius: 2px;
+  box-shadow: 0 0 8px rgba(123, 47, 255, 0.5);
+}
+
 .home-nav-actions {
   display: flex;
   align-items: center;

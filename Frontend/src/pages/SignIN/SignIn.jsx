@@ -35,7 +35,9 @@ const SignIn = () => {
                 alert("Login successful!");
 
                 if (data.user.hasProfile) {
-                    navigate("/");
+                    navigate("/create-duo");
+                } else {
+                    navigate("/profile-maker");
                 }
             } else {
                 alert(data.message || "Invalid credentials. Please try again.");
