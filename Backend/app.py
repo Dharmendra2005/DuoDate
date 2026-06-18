@@ -7,6 +7,7 @@ from config import Config
 from routes.signup import signup_bp
 from routes.login import login_bp
 from routes.profile import profile_bp
+from routes.duo import duo_bp
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -26,6 +27,7 @@ def serve_upload(filename):
 app.register_blueprint(signup_bp)
 app.register_blueprint(login_bp)
 app.register_blueprint(profile_bp)
+app.register_blueprint(duo_bp)
 
 if __name__ == '__main__':
     print(f"Starting DuoDate Python backend on http://localhost:{Config.PORT}...")
