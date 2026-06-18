@@ -80,13 +80,21 @@ def duo_status():
             
         db = get_db()
         
+        # Prepare current user's profile data
+        me_user = db.users.find_one({"email": email})
+        me_profile = db.profiles.find_one({"email": email})
+        me_data = {
+            "email": email,
+            "name": me_user.get("name") if me_user else "",
+            "age": calculate_age(me_user.get("birth_date") if me_user else None),
+            "bio": me_profile.get("self_summary", "") if me_profile else "",
+            "photos": me_profile.get("photos") if me_profile else []
+        } if (me_user or me_profile) else None
+
         # 1. Check if in active duo
-        my_duo = db.duos.find_one({"members": email})
+        my_duo = db.duos.find_one({"members": email}, sort=[("created_at", -1)])
         if my_duo:
             partner_email = [m for m in my_duo["members"] if m != email][0]
-            
-            me_user = db.users.find_one({"email": email})
-            me_profile = db.profiles.find_one({"email": email})
             
             partner_user = db.users.find_one({"email": partner_email})
             partner_profile = db.profiles.find_one({"email": partner_email})
@@ -94,13 +102,7 @@ def duo_status():
             return jsonify({
                 "status": "in_duo",
                 "duo_id": str(my_duo["_id"]),
-                "me": {
-                    "email": email,
-                    "name": me_user.get("name") if me_user else "",
-                    "age": calculate_age(me_user.get("birth_date") if me_user else None),
-                    "bio": me_profile.get("self_summary", "") if me_profile else "",
-                    "photos": me_profile.get("photos") if me_profile else []
-                },
+                "me": me_data,
                 "partner": {
                     "email": partner_email,
                     "name": partner_user.get("name") if partner_user else "",
@@ -119,6 +121,7 @@ def duo_status():
             
             return jsonify({
                 "status": "invite_received",
+                "me": me_data,
                 "invite": {
                     "id": str(received["_id"]),
                     "sender": {
@@ -137,6 +140,7 @@ def duo_status():
             
             return jsonify({
                 "status": "invite_sent",
+                "me": me_data,
                 "invite": {
                     "id": str(sent["_id"]),
                     "receiver": {
@@ -146,7 +150,10 @@ def duo_status():
                 }
             }), 200
             
-        return jsonify({"status": "solo"}), 200
+        return jsonify({
+            "status": "solo",
+            "me": me_data
+        }), 200
     except Exception as e:
         print(f"[ERROR duo_status] {e}")
         return jsonify({"message": str(e)}), 500
@@ -268,7 +275,7 @@ def discover_duos():
             return jsonify({"message": "Email is required"}), 400
             
         db = get_db()
-        my_duo = db.duos.find_one({"members": email})
+        my_duo = db.duos.find_one({"members": email}, sort=[("created_at", -1)])
         if not my_duo:
             return jsonify({"message": "You must be in a duo to swipe", "duos": []}), 400
             
@@ -285,14 +292,14 @@ def discover_duos():
             
         all_other_duos = list(db.duos.find(discover_query))
         
-        # Get swipes already cast by this user
-        my_swipes = list(db.swipes.find({"swiper_email": email}))
-        swiped_duo_ids = {s["target_duo_id"] for s in my_swipes}
+        # Get likes already cast by this active duo (only filter out liked duos, not passed ones)
+        duo_likes = list(db.swipes.find({"swiper_duo_id": my_duo_id, "action": "like"}))
+        liked_duo_ids = {s["target_duo_id"] for s in duo_likes}
         
         results = []
         for d in all_other_duos:
             duo_id = str(d["_id"])
-            if duo_id in swiped_duo_ids:
+            if duo_id in liked_duo_ids:
                 continue
                 
             members_data = []
@@ -313,6 +320,8 @@ def discover_duos():
                 "compatibility": 78 # Standard aesthetic rating
             })
             
+        import random
+        random.shuffle(results)
         return jsonify({"duos": results}), 200
     except Exception as e:
         print(f"[ERROR discover_duos] {e}")
@@ -330,7 +339,7 @@ def register_swipe():
             return jsonify({"message": "swiperEmail, targetDuoId, and action are required"}), 400
             
         db = get_db()
-        my_duo = db.duos.find_one({"members": swiper_email})
+        my_duo = db.duos.find_one({"members": swiper_email}, sort=[("created_at", -1)])
         if not my_duo:
             return jsonify({"message": "You must be in a duo to swipe"}), 400
             
@@ -338,9 +347,8 @@ def register_swipe():
         
         # Save swipe
         db.swipes.update_one(
-            {"swiper_email": swiper_email, "target_duo_id": target_duo_id},
+            {"swiper_email": swiper_email, "swiper_duo_id": my_duo_id, "target_duo_id": target_duo_id},
             {"$set": {
-                "swiper_duo_id": my_duo_id,
                 "action": action,
                 "timestamp": datetime.now()
             }},
@@ -355,6 +363,7 @@ def register_swipe():
             partner_email = [m for m in my_duo["members"] if m != swiper_email][0]
             partner_swipe = db.swipes.find_one({
                 "swiper_email": partner_email,
+                "swiper_duo_id": my_duo_id,
                 "target_duo_id": target_duo_id,
                 "action": "like"
             })
@@ -369,11 +378,13 @@ def register_swipe():
                     
                     t1_swipe = db.swipes.find_one({
                         "swiper_email": t1_email,
+                        "swiper_duo_id": target_duo_id,
                         "target_duo_id": my_duo_id,
                         "action": "like"
                     })
                     t2_swipe = db.swipes.find_one({
                         "swiper_email": t2_email,
+                        "swiper_duo_id": target_duo_id,
                         "target_duo_id": my_duo_id,
                         "action": "like"
                     })
@@ -411,7 +422,7 @@ def get_matches():
             return jsonify({"message": "Email is required"}), 400
             
         db = get_db()
-        my_duo = db.duos.find_one({"members": email})
+        my_duo = db.duos.find_one({"members": email}, sort=[("created_at", -1)])
         if not my_duo:
             return jsonify({"matches": []}), 200
             
@@ -514,7 +525,7 @@ def get_interests():
             return jsonify({"message": "Email is required"}), 400
             
         db = get_db()
-        my_duo = db.duos.find_one({"members": email})
+        my_duo = db.duos.find_one({"members": email}, sort=[("created_at", -1)])
         if not my_duo:
             return jsonify({"incoming_likes": [], "my_likes": []}), 200
             
@@ -559,9 +570,9 @@ def get_interests():
             except Exception as ex:
                 print(f"[ERROR parsing incoming duo {duo_id_str}] {ex}")
                 
-        # 2. My Likes: swipes swiper_email is in my_duo["members"], action == "like"
+        # 2. My Likes: swipes swiper_duo_id is my_duo_id, action == "like"
         my_swipes = list(db.swipes.find({
-            "swiper_email": {"$in": my_duo["members"]},
+            "swiper_duo_id": my_duo_id,
             "action": "like"
         }))
         
@@ -604,4 +615,24 @@ def get_interests():
         }), 200
     except Exception as e:
         print(f"[ERROR get_interests] {e}")
+        return jsonify({"message": str(e)}), 500
+
+@duo_bp.route('/api/duo/leave', methods=['POST'])
+def leave_duo():
+    try:
+        data = request.get_json()
+        email = data.get("email")
+        if not email:
+            return jsonify({"message": "Email is required"}), 400
+            
+        db = get_db()
+        # Find the latest duo of this user
+        my_duo = db.duos.find_one({"members": email}, sort=[("created_at", -1)])
+        if my_duo:
+            # Delete this duo so the user is solo again
+            db.duos.delete_one({"_id": my_duo["_id"]})
+            
+        return jsonify({"message": "Successfully left the duo."}), 200
+    except Exception as e:
+        print(f"[ERROR leave_duo] {e}")
         return jsonify({"message": str(e)}), 500
