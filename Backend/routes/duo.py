@@ -97,11 +97,15 @@ def duo_status():
                 "me": {
                     "email": email,
                     "name": me_user.get("name") if me_user else "",
+                    "age": calculate_age(me_user.get("birth_date") if me_user else None),
+                    "bio": me_profile.get("self_summary", "") if me_profile else "",
                     "photos": me_profile.get("photos") if me_profile else []
                 },
                 "partner": {
                     "email": partner_email,
                     "name": partner_user.get("name") if partner_user else "",
+                    "age": calculate_age(partner_user.get("birth_date") if partner_user else None),
+                    "bio": partner_profile.get("self_summary", "") if partner_profile else "",
                     "photos": partner_profile.get("photos") if partner_profile else []
                 }
             }), 200
