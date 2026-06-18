@@ -8,6 +8,8 @@ const HomeHeader = () => {
     const email = localStorage.getItem('userEmail');
     const [profilePhoto, setProfilePhoto] = useState('');
     const [hasPendingInvite, setHasPendingInvite] = useState(false);
+    const [incomingInvite, setIncomingInvite] = useState(null);
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
     const queryParams = new URLSearchParams(location.search);
     const activeTab = queryParams.get('tab') || 'discover';
@@ -26,8 +28,14 @@ const HomeHeader = () => {
                         if (photo) {
                             setProfilePhoto(photo.startsWith("http") ? photo : `http://localhost:3000/uploads/${photo}`);
                         }
+                        setHasPendingInvite(false);
+                        setIncomingInvite(null);
                     } else if (data.status === 'invite_received') {
                         setHasPendingInvite(true);
+                        setIncomingInvite(data.invite);
+                    } else {
+                        setHasPendingInvite(false);
+                        setIncomingInvite(null);
                     }
                 }
             } catch (err) {
@@ -40,6 +48,49 @@ const HomeHeader = () => {
         const timer = setInterval(fetchDuoStatus, 5000);
         return () => clearInterval(timer);
     }, [email]);
+
+    const handleAcceptInvite = async (senderEmail) => {
+        if (!email || !senderEmail) return;
+        try {
+            const response = await fetch('http://localhost:3000/api/duo/accept', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    senderEmail: senderEmail,
+                    receiverEmail: email
+                })
+            });
+            if (response.ok) {
+                setIncomingInvite(null);
+                setHasPendingInvite(false);
+                setIsDropdownOpen(false);
+                navigate('/create-duo?tab=discover');
+            }
+        } catch (err) {
+            console.error("Header accept error:", err);
+        }
+    };
+
+    const handleRejectInvite = async (senderEmail) => {
+        if (!email || !senderEmail) return;
+        try {
+            const response = await fetch('http://localhost:3000/api/duo/reject', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    senderEmail: senderEmail,
+                    receiverEmail: email
+                })
+            });
+            if (response.ok) {
+                setIncomingInvite(null);
+                setHasPendingInvite(false);
+                setIsDropdownOpen(false);
+            }
+        } catch (err) {
+            console.error("Header reject error:", err);
+        }
+    };
 
     const handleLogout = () => {
         localStorage.removeItem('userEmail');
@@ -93,15 +144,68 @@ const HomeHeader = () => {
                     <i className="ti ti-messages"></i>
                 </button>
 
-                {/* Requests Icon */}
-                <button
-                    className='home-nav-icon-btn'
-                    title="Duo Requests"
-                    onClick={() => navigate('/create-duo')}
-                >
-                    <i className="ti ti-user-plus"></i>
-                    {hasPendingInvite && <span className="home-nav-badge">1</span>}
-                </button>
+                {/* Requests Button with Dropdown */}
+                <div style={{ position: 'relative' }}>
+                    <button
+                        className='home-nav-icon-btn'
+                        title="Duo Requests"
+                        onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                    >
+                        <i className="ti ti-user-plus"></i>
+                        {hasPendingInvite && <span className="home-nav-badge">1</span>}
+                    </button>
+
+                    {isDropdownOpen && (
+                        <div className="home-nav-requests-dropdown" style={{
+                            position: 'absolute',
+                            top: '46px',
+                            right: '0',
+                            width: '280px',
+                            background: '#151628',
+                            border: '1px solid #2A2B40',
+                            borderRadius: '8px',
+                            boxShadow: '0 8px 24px rgba(0, 0, 0, 0.4)',
+                            padding: '12px',
+                            zIndex: 1000,
+                            fontFamily: 'sans-serif'
+                        }}>
+                            <h4 style={{ margin: '0 0 10px 0', fontSize: '13px', color: '#7B7D9A', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left' }}>Duo Requests</h4>
+                            {incomingInvite ? (
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(255,255,255,0.02)', padding: '8px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                        <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: '#7b2fff', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 'bold' }}>
+                                            {incomingInvite.sender?.name?.charAt(0).toUpperCase() || 'U'}
+                                        </div>
+                                        <div style={{ display: 'flex', flexDirection: 'column', textAlign: 'left' }}>
+                                            <span style={{ fontSize: '12px', fontWeight: '600', color: '#fff' }}>{incomingInvite.sender?.name}</span>
+                                            <span style={{ fontSize: '10px', color: '#888' }}>wants to pair</span>
+                                        </div>
+                                    </div>
+                                    <div style={{ display: 'flex', gap: '4px' }}>
+                                        <button 
+                                            type="button" 
+                                            onClick={() => handleAcceptInvite(incomingInvite.sender.email)}
+                                            style={{ background: '#10b981', border: 'none', color: '#fff', padding: '4px 8px', borderRadius: '4px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer', display: 'inline-block', width: 'auto', minHeight: 'auto' }}
+                                        >
+                                            Acc
+                                        </button>
+                                        <button 
+                                            type="button" 
+                                            onClick={() => handleRejectInvite(incomingInvite.sender.email)}
+                                            style={{ background: '#ef4444', border: 'none', color: '#fff', padding: '4px 8px', borderRadius: '4px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer', display: 'inline-block', width: 'auto', minHeight: 'auto' }}
+                                        >
+                                            Rej
+                                        </button>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div style={{ padding: '8px', textAlign: 'center', color: '#888', fontSize: '11px' }}>
+                                    No pending requests
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </div>
 
                 {/* Logout Button */}
                 <button className="home-nav-logout" onClick={handleLogout}>

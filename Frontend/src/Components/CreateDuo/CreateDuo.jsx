@@ -22,103 +22,195 @@ const CreateDuo = () => {
   const [interestsData, setInterestsData] = useState({ incoming_likes: [], my_likes: [] });
   const [loading, setLoading] = useState(true);
 
+  // Dynamic profiles
+  const [myProfile, setMyProfile] = useState(null);
+  const [partnerProfile, setPartnerProfile] = useState(null);
+
+  // Discover deck states
+  const [discoverDuos, setDiscoverDuos] = useState([]);
+  const [currentDuoIndex, setCurrentDuoIndex] = useState(0);
+
+  // Matched duo states
+  const [matchedDuoData, setMatchedDuoData] = useState(null);
+  const [matchedId, setMatchedId] = useState(null);
+
+  // Chat messaging states
+  const [messages, setMessages] = useState([]);
+  const [newMessageText, setNewMessageText] = useState('');
+
+  // User search and invite states
+  const [searchResults, setSearchResults] = useState([]);
+  const [incomingInvite, setIncomingInvite] = useState(null);
+  const [sentInvite, setSentInvite] = useState(null);
+
   // Gallery navigation states for the Step 2 dashboard view
   const [myPhotoIndex, setMyPhotoIndex] = useState(0);
   const [friendPhotoIndex, setFriendPhotoIndex] = useState(0);
+  const [oppPhotoIndex0, setOppPhotoIndex0] = useState(0);
+  const [oppPhotoIndex1, setOppPhotoIndex1] = useState(0);
 
-  const me = {
-    username: "Dharm",
-    age: 23,
-    profilePic: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=150&q=80",
-    photos: [
-      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=600&q=80",
-      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=600&q=80"
-    ],
-    bio: "Full stack engineer. Coffee enthusiast, occasional runner, and constantly building side projects in React."
+  const getPhotoUrl = (photo) => {
+    if (!photo) return "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=150&q=80";
+    if (photo.startsWith("http")) return photo;
+    return `http://localhost:3000/uploads/${photo}`;
   };
 
-  const friend = {
-    username: "Rohan",
-    age: 24,
-    profilePic: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=150&q=80",
-    photos: [
-      "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=600&q=80",
-      "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80"
-    ],
-    bio: "Product designer passionate about typography, clean interfaces, and finding the best street food spots."
+  const checkDuoStatus = async () => {
+    if (!email) return;
+    try {
+      const statusRes = await fetch(`http://localhost:3000/api/duo/status?email=${email}`);
+      const statusData = await statusRes.json();
+      if (statusRes.ok) {
+        setDuoStatus(statusData.status);
+        if (statusData.status === 'in_duo') {
+          setStep(2);
+          setIsInviteModalOpen(false);
+          setMyProfile(statusData.me);
+          setPartnerProfile(statusData.partner);
+
+          // Fetch discoverable duos if not loaded
+          if (discoverDuos.length === 0) {
+            const discoverRes = await fetch(`http://localhost:3000/api/duo/discover?email=${email}`);
+            const discoverData = await discoverRes.json();
+            if (discoverRes.ok) {
+              setDiscoverDuos(discoverData.duos || []);
+            }
+          }
+        } else if (statusData.status === 'invite_received') {
+          setStep(1);
+          setIncomingInvite(statusData.invite);
+        } else if (statusData.status === 'invite_sent') {
+          setStep(1);
+          setSentInvite(statusData.invite);
+        } else {
+          setStep(1);
+          setIncomingInvite(null);
+          setSentInvite(null);
+        }
+      }
+    } catch (err) {
+      console.error("Error checking duo status:", err);
+    }
   };
 
-  // Fallback mock lists if DB is empty
-  const mockIncomingLikes = [
-    {
-      id: "mock_duo_1",
-      members: [
-        { name: "Emma", age: 24, photos: ["https://images.unsplash.com/photo-1517841905240-472988babdf9?w=300&auto=format&fit=crop&q=80"], bio: "Travel enthusiast looking for coffee and double dates." },
-        { name: "Sophia", age: 23, photos: ["https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=300&auto=format&fit=crop&q=80"], bio: "Always down for weekend hikes and exploring new cafes." }
-      ],
-      compatibility: 96,
-      timestamp: "2 hours ago"
-    }
-  ];
-
-  const mockMyLikes = [
-    {
-      id: "mock_duo_2",
-      members: [
-        { name: "Morgan", age: 25, photos: ["https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&auto=format&fit=crop&q=80"], bio: "Product designer, loves typography and clean design." },
-        { name: "Riley", age: 26, photos: ["https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=300&auto=format&fit=crop&q=80"], bio: "React engineer, travel photography nerd." }
-      ],
-      compatibility: 85,
-      timestamp: "1 day ago"
-    }
-  ];
-
+  // Initial load
   useEffect(() => {
     if (!email) {
       setLoading(false);
       return;
     }
 
-    const fetchData = async () => {
+    const initLoad = async () => {
       try {
-        const statusRes = await fetch(`http://localhost:3000/api/duo/status?email=${email}`);
-        const statusData = await statusRes.json();
-        if (statusRes.ok) {
-          setDuoStatus(statusData.status);
-          if (statusData.status === 'in_duo') {
-            setStep(2);
-            setIsInviteModalOpen(false);
-          } else {
-            setStep(1);
-            if (activeTab === 'discover') {
-              setIsInviteModalOpen(true);
-            }
-          }
-        }
-
+        await checkDuoStatus();
+        
+        // Load interest board data
         const interestsRes = await fetch(`http://localhost:3000/api/duo/interests?email=${email}`);
         const intData = await interestsRes.json();
         if (interestsRes.ok) {
           setInterestsData(intData);
         }
       } catch (err) {
-        console.error("Error fetching duo data:", err);
+        console.error("Init load error:", err);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchData();
+    initLoad();
   }, [email, activeTab]);
 
-  const handleSearch = (e) => {
-    const value = e.target.value;
-    setSearchQuery(value);
-    if (value.trim().length > 2) {
-      setIsInviteSent(true);
-    } else {
-      setIsInviteSent(false);
+  // Duo status polling effect
+  useEffect(() => {
+    let interval;
+    if (email && duoStatus !== 'in_duo') {
+      interval = setInterval(() => {
+        checkDuoStatus();
+      }, 3000);
     }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [email, duoStatus]);
+
+  // Reset photo indices when opposing duo deck moves to a new index
+  useEffect(() => {
+    setOppPhotoIndex0(0);
+    setOppPhotoIndex1(0);
+  }, [currentDuoIndex]);
+
+  // Debounced search effect
+  useEffect(() => {
+    if (!searchQuery.trim() || searchQuery.trim().length < 2) {
+      setSearchResults([]);
+      return;
+    }
+    const delayDebounce = setTimeout(async () => {
+      try {
+        const response = await fetch(`http://localhost:3000/api/users/search?q=${searchQuery}&email=${email}`);
+        const data = await response.json();
+        if (response.ok) {
+          setSearchResults(data.users || []);
+        }
+      } catch (err) {
+        console.error("Search error:", err);
+      }
+    }, 300);
+    return () => clearTimeout(delayDebounce);
+  }, [searchQuery, email]);
+
+  // Message polling effect
+  useEffect(() => {
+    let interval;
+    if (isMatched && matchedId) {
+      fetchMessages(matchedId);
+      interval = setInterval(() => {
+        fetchMessages(matchedId);
+      }, 3000);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [isMatched, matchedId]);
+
+  const fetchMessages = async (mId) => {
+    if (!mId) return;
+    try {
+      const response = await fetch(`http://localhost:3000/api/duo/messages?matchId=${mId}`);
+      const data = await response.json();
+      if (response.ok) {
+        setMessages(data.messages || []);
+      }
+    } catch (err) {
+      console.error("Error fetching messages:", err);
+    }
+  };
+
+  const handleSendMessage = async (e) => {
+    if (e) e.preventDefault();
+    if (!newMessageText.trim() || !matchedId || !email) return;
+
+    try {
+      const response = await fetch('http://localhost:3000/api/duo/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          matchId: matchedId,
+          senderEmail: email,
+          text: newMessageText
+        })
+      });
+      if (response.ok) {
+        setNewMessageText('');
+        fetchMessages(matchedId);
+      }
+    } catch (err) {
+      console.error("Error sending message:", err);
+    }
+  };
+
+  const handleSearch = (e) => {
+    setSearchQuery(e.target.value);
   };
 
   const copyInviteLink = () => {
@@ -129,44 +221,183 @@ const CreateDuo = () => {
 
   const handleNextPhoto = (target) => {
     if (target === 'me') {
-      setMyPhotoIndex((prev) => (prev + 1) % me.photos.length);
+      const photosLength = myProfile?.photos?.length || 0;
+      if (photosLength > 0) {
+        setMyPhotoIndex((prev) => (prev + 1) % photosLength);
+      }
     } else {
-      setFriendPhotoIndex((prev) => (prev + 1) % friend.photos.length);
+      const photosLength = partnerProfile?.photos?.length || 0;
+      if (photosLength > 0) {
+        setFriendPhotoIndex((prev) => (prev + 1) % photosLength);
+      }
     }
   };
 
-  const handleAcceptInvite = async () => {
-    if (email) {
+  const handlePrevPhoto = (target) => {
+    if (target === 'me') {
+      const photosLength = myProfile?.photos?.length || 0;
+      if (photosLength > 0) {
+        setMyPhotoIndex((prev) => (prev - 1 + photosLength) % photosLength);
+      }
+    } else {
+      const photosLength = partnerProfile?.photos?.length || 0;
+      if (photosLength > 0) {
+        setFriendPhotoIndex((prev) => (prev - 1 + photosLength) % photosLength);
+      }
+    }
+  };
+
+  const handleOppPrevPhoto = (memberIdx, photosLength) => {
+    if (photosLength <= 1) return;
+    if (memberIdx === 0) {
+      setOppPhotoIndex0((prev) => (prev - 1 + photosLength) % photosLength);
+    } else {
+      setOppPhotoIndex1((prev) => (prev - 1 + photosLength) % photosLength);
+    }
+  };
+
+  const handleOppNextPhoto = (memberIdx, photosLength) => {
+    if (photosLength <= 1) return;
+    if (memberIdx === 0) {
+      setOppPhotoIndex0((prev) => (prev + 1) % photosLength);
+    } else {
+      setOppPhotoIndex1((prev) => (prev + 1) % photosLength);
+    }
+  };
+
+  const handleSendInvite = async (receiverEmail) => {
+    if (email && receiverEmail) {
       try {
-        await fetch('http://localhost:3000/api/duo/accept', {
+        const response = await fetch('http://localhost:3000/api/duo/invite', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             senderEmail: email,
-            receiverEmail: 'rohan@gmail.com'
+            receiverEmail: receiverEmail
           })
         });
+        const data = await response.json();
+        if (response.ok) {
+          setSearchQuery('');
+          setSearchResults([]);
+          await checkDuoStatus();
+        } else {
+          alert(data.message || "Failed to send invitation.");
+        }
+      } catch (err) {
+        console.error("Invite send error:", err);
+      }
+    }
+  };
+
+  const handleAcceptInvite = async (senderEmail) => {
+    if (email && senderEmail) {
+      try {
+        const response = await fetch('http://localhost:3000/api/duo/accept', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            senderEmail: senderEmail,
+            receiverEmail: email
+          })
+        });
+        if (response.ok) {
+          setIsInviteModalOpen(false);
+          setIncomingInvite(null);
+          setAnimationClass('slide-out');
+          setTimeout(async () => {
+            setDuoStatus('in_duo');
+            setStep(2);
+            setAnimationClass('slide-in');
+            await checkDuoStatus();
+            setTimeout(() => {
+              setAnimationClass('');
+            }, 500);
+          }, 500);
+        }
       } catch (err) {
         console.error("Duo accept error:", err);
       }
     }
+  };
 
-    setIsInviteModalOpen(false);
-    setAnimationClass('slide-out');
-    setTimeout(() => {
-      setDuoStatus('in_duo');
-      setStep(2);
-      setAnimationClass('slide-in');
-      setTimeout(() => {
-        setAnimationClass('');
-      }, 500);
-    }, 500);
+  const handleRejectInvite = async (senderEmail) => {
+    if (email && senderEmail) {
+      try {
+        const response = await fetch('http://localhost:3000/api/duo/reject', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            senderEmail: senderEmail,
+            receiverEmail: email
+          })
+        });
+        if (response.ok) {
+          setIncomingInvite(null);
+          setDuoStatus('solo');
+        }
+      } catch (err) {
+        console.error("Duo reject error:", err);
+      }
+    }
+  };
+
+  const handleCancelInvite = async (receiverEmail) => {
+    if (email && receiverEmail) {
+      try {
+        const response = await fetch('http://localhost:3000/api/duo/reject', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            senderEmail: email,
+            receiverEmail: receiverEmail
+          })
+        });
+        if (response.ok) {
+          setSentInvite(null);
+          setDuoStatus('solo');
+        }
+      } catch (err) {
+        console.error("Cancel invite error:", err);
+      }
+    }
+  };
+
+  const handleSwipe = async (action) => {
+    if (discoverDuos.length === 0 || currentDuoIndex >= discoverDuos.length) return;
+    const currentDuo = discoverDuos[currentDuoIndex];
+
+    if (email) {
+      try {
+        const response = await fetch('http://localhost:3000/api/duo/swipe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            swiperEmail: email,
+            targetDuoId: currentDuo.id,
+            action: action
+          })
+        });
+        const data = await response.json();
+        if (response.ok) {
+          if (data.matched) {
+            setMatchedDuoData(currentDuo);
+            setMatchedId(data.matchId);
+            setIsMatched(true);
+          } else {
+            setCurrentDuoIndex((prev) => prev + 1);
+          }
+        }
+      } catch (err) {
+        console.error("Error swiping:", err);
+      }
+    }
   };
 
   const handleMatchBack = async (targetDuoId) => {
     if (email) {
       try {
-        await fetch('http://localhost:3000/api/duo/swipe', {
+        const response = await fetch('http://localhost:3000/api/duo/swipe', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -175,17 +406,22 @@ const CreateDuo = () => {
             action: 'like'
           })
         });
+        const data = await response.json();
+        if (response.ok) {
+          const matchedDuo = (interestsData.incoming_likes || []).find(d => d.id === targetDuoId) || discoverDuos.find(d => d.id === targetDuoId);
+          setMatchedDuoData(matchedDuo);
+          setMatchedId(data.matchId);
+          setIsMatched(true);
+        }
       } catch (err) {
         console.error("Match back error:", err);
       }
     }
-    setIsMatched(true);
-    setStep(2);
   };
 
   const defaultAvatar = "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=150&q=80";
-  const incomingLikes = interestsData.incoming_likes.length > 0 ? interestsData.incoming_likes : mockIncomingLikes;
-  const myLikes = interestsData.my_likes.length > 0 ? interestsData.my_likes : mockMyLikes;
+  const incomingLikes = interestsData.incoming_likes || [];
+  const myLikes = interestsData.my_likes || [];
 
   return (
     <div className="create-duo-page">
@@ -222,86 +458,98 @@ const CreateDuo = () => {
             <div className="interests-content">
               {interestSubTab === 'incoming' ? (
                 <div className="interests-grid">
-                  {incomingLikes.map((duo) => (
-                    <div key={duo.id} className="interest-card">
-                      <div className="interest-card-header">
-                        <div className="compatibility-badge">
-                          ⭐ {duo.compatibility}% Match
-                        </div>
-                      </div>
-                      
-                      <div className="interest-card-images">
-                        <div className="duo-avatar-pair">
-                          {duo.members.map((m, idx) => (
-                            <div key={idx} className="avatar-frame">
-                              <img src={m.photos?.[0] || defaultAvatar} alt={m.name} className="avatar-img" />
-                              <div className="avatar-overlay">
-                                <span className="avatar-name">{m.name}, {m.age}</span>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-
-                      <div className="interest-card-body">
-                        <div className="interest-bios">
-                          {duo.members.map((m, idx) => (
-                            <p key={idx} className="bio-line">
-                              <strong>{m.name}:</strong> {m.bio || "No bio description entered."}
-                            </p>
-                          ))}
+                  {incomingLikes.length === 0 ? (
+                    <div style={{ textAlign: 'center', gridColumn: '1/-1', padding: '40px', color: '#aaa' }}>
+                      No incoming likes yet. Keep swiping!
+                    </div>
+                  ) : (
+                    incomingLikes.map((duo) => (
+                      <div key={duo.id} className="interest-card">
+                        <div className="interest-card-header">
+                          <div className="compatibility-badge">
+                            ⭐ {duo.compatibility}% Match
+                          </div>
                         </div>
                         
-                        <div className="interest-card-actions">
-                          <button 
-                            type="button" 
-                            className="btn-primary match-action-btn"
-                            onClick={() => handleMatchBack(duo.id)}
-                          >
-                            ❤️ Match with them!
-                          </button>
+                        <div className="interest-card-images">
+                          <div className="duo-avatar-pair">
+                            {duo.members.map((m, idx) => (
+                              <div key={idx} className="avatar-frame">
+                                <img src={getPhotoUrl(m.photos?.[0])} alt={m.name} className="avatar-img" />
+                                <div className="avatar-overlay">
+                                  <span className="avatar-name">{m.name}, {m.age}</span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="interest-card-body">
+                          <div className="interest-bios">
+                            {duo.members.map((m, idx) => (
+                              <p key={idx} className="bio-line">
+                                <strong>{m.name}:</strong> {m.bio || "No bio description entered."}
+                              </p>
+                            ))}
+                          </div>
+                          
+                          <div className="interest-card-actions">
+                            <button 
+                              type="button" 
+                              className="btn-primary match-action-btn"
+                              onClick={() => handleMatchBack(duo.id)}
+                            >
+                              ❤️ Match with them!
+                            </button>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    ))
+                  )}
                 </div>
               ) : (
                 <div className="interests-grid">
-                  {myLikes.map((duo) => (
-                    <div key={duo.id} className="interest-card">
-                      <div className="interest-card-header">
-                        <div className="compatibility-badge">
-                          ⭐ {duo.compatibility}% Match
-                        </div>
-                      </div>
-                      
-                      <div className="interest-card-images">
-                        <div className="duo-avatar-pair">
-                          {duo.members.map((m, idx) => (
-                            <div key={idx} className="avatar-frame">
-                              <img src={m.photos?.[0] || defaultAvatar} alt={m.name} className="avatar-img" />
-                              <div className="avatar-overlay">
-                                <span className="avatar-name">{m.name}, {m.age}</span>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-
-                      <div className="interest-card-body">
-                        <div className="interest-bios">
-                          {duo.members.map((m, idx) => (
-                            <p key={idx} className="bio-line">
-                              <strong>{m.name}:</strong> {m.bio || "No bio description entered."}
-                            </p>
-                          ))}
-                        </div>
-                        <div className="interest-status-label">
-                          <span>Pending response...</span>
-                        </div>
-                      </div>
+                  {myLikes.length === 0 ? (
+                    <div style={{ textAlign: 'center', gridColumn: '1/-1', padding: '40px', color: '#aaa' }}>
+                      You haven't liked any duos yet. Go to Discover to find matches!
                     </div>
-                  ))}
+                  ) : (
+                    myLikes.map((duo) => (
+                      <div key={duo.id} className="interest-card">
+                        <div className="interest-card-header">
+                          <div className="compatibility-badge">
+                            ⭐ {duo.compatibility}% Match
+                          </div>
+                        </div>
+                        
+                        <div className="interest-card-images">
+                          <div className="duo-avatar-pair">
+                            {duo.members.map((m, idx) => (
+                              <div key={idx} className="avatar-frame">
+                                <img src={getPhotoUrl(m.photos?.[0])} alt={m.name} className="avatar-img" />
+                                <div className="avatar-overlay">
+                                  <span className="avatar-name">{m.name}, {m.age}</span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="interest-card-body">
+                          <div className="interest-bios">
+                            {duo.members.map((m, idx) => (
+                              <p key={idx} className="bio-line">
+                                <strong>{m.name}:</strong> {m.bio || "No bio description entered."}
+                              </p>
+                            ))}
+                          </div>
+                          <div className="interest-status-label">
+                            <span>Pending response...</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  )}
                 </div>
               )}
             </div>
@@ -365,6 +613,50 @@ const CreateDuo = () => {
                         </div>
                       </div>
 
+                      {/* Search Results Dropdown */}
+                      {searchResults.length > 0 && (
+                        <div className="search-results-list" style={{
+                          background: 'rgba(255, 255, 255, 0.05)',
+                          borderRadius: '8px',
+                          border: '1px solid rgba(255, 255, 255, 0.1)',
+                          marginTop: '-8px',
+                          marginBottom: '16px',
+                          maxHeight: '180px',
+                          overflowY: 'auto',
+                          padding: '4px'
+                        }}>
+                          {searchResults.map((user) => (
+                            <div key={user.email} style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'space-between',
+                              padding: '8px 12px',
+                              borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
+                            }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <img 
+                                  src={getPhotoUrl(user.photo)} 
+                                  alt={user.name} 
+                                  style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover' }} 
+                                />
+                                <div style={{ display: 'flex', flexDirection: 'column', textAlign: 'left' }}>
+                                  <span style={{ fontSize: '14px', fontWeight: '500', color: '#fff' }}>{user.name}</span>
+                                  <span style={{ fontSize: '11px', color: '#888' }}>{user.email}</span>
+                                </div>
+                              </div>
+                              <button 
+                                type="button" 
+                                className="btn-primary"
+                                style={{ padding: '4px 10px', fontSize: '12px', minHeight: 'auto', width: 'auto' }}
+                                onClick={() => handleSendInvite(user.email)}
+                              >
+                                Invite
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
                       <div className="divider-row">
                         <span className="divider-text">or share your link</span>
                       </div>
@@ -376,22 +668,55 @@ const CreateDuo = () => {
                         </button>
                       </div>
 
-                      {isInviteSent && (
-                        <div className="status-alert-box alert-pending">
+                      {/* Pending Sent Invite Box */}
+                      {sentInvite && (
+                        <div className="status-alert-box alert-pending" style={{ marginTop: '20px' }}>
                           <div className="alert-header">
                             <span className="pulse-indicator"></span>
                             <span className="alert-title">Request Pending</span>
                           </div>
                           <p className="alert-body">
-                            Waiting for <strong>Rohan</strong> to accept your invite request and enter the lobby...
+                            Waiting for <strong>{sentInvite.receiver.name}</strong> ({sentInvite.receiver.email}) to accept your invite request and enter the lobby...
                           </p>
                           <button 
                             type="button" 
-                            className="btn-primary w-100" 
-                            onClick={handleAcceptInvite}
+                            className="btn-secondary w-100" 
+                            style={{ marginTop: '12px', padding: '8px' }}
+                            onClick={() => handleCancelInvite(sentInvite.receiver.email)}
                           >
-                            Accept Invite & Enter Swipe Arena →
+                            Cancel Invitation
                           </button>
+                        </div>
+                      )}
+
+                      {/* Incoming Received Invite Box */}
+                      {incomingInvite && (
+                        <div className="status-alert-box alert-pending" style={{ marginTop: '20px' }}>
+                          <div className="alert-header">
+                            <span className="pulse-indicator"></span>
+                            <span className="alert-title">Duo Invite Received</span>
+                          </div>
+                          <p className="alert-body">
+                            <strong>{incomingInvite.sender.name}</strong> ({incomingInvite.sender.email}) has invited you to be their duo partner!
+                          </p>
+                          <div style={{ display: 'flex', gap: '12px', marginTop: '12px' }}>
+                            <button 
+                              type="button" 
+                              className="btn-primary" 
+                              style={{ flex: 1, padding: '8px' }}
+                              onClick={() => handleAcceptInvite(incomingInvite.sender.email)}
+                            >
+                              Accept
+                            </button>
+                            <button 
+                              type="button" 
+                              className="btn-secondary" 
+                              style={{ flex: 1, padding: '8px' }}
+                              onClick={() => handleRejectInvite(incomingInvite.sender.email)}
+                            >
+                              Decline
+                            </button>
+                          </div>
                         </div>
                       )}
 
@@ -417,112 +742,232 @@ const CreateDuo = () => {
                     </p>
                   </div>
 
-                  <div className="swipe-arena full-width-arena">
-                    {/* YOUR DUO */}
-                    <div className="duo-stack">
-                      <div className="duo-label">
-                        Your duo <span className="duo-badge you">YOU + FRIEND</span>
-                      </div>
-                      <div className="profile-card">
-                        <div className="card-img-placeholder card-img-1">🧑‍🎨</div>
-                        <div className="card-body">
-                          <div className="card-name-row">
-                            <span className="card-name">Alex, 26</span>
-                            <span className="card-age">+ Jamie 25</span>
-                          </div>
-                          <div className="card-tags">
-                            <span className="tag v">Music</span>
-                            <span className="tag m">Hiking</span>
-                            <span className="tag g">Foodie</span>
-                          </div>
-                          <div className="card-dist">
-                            <i className="ti ti-map-pin"></i> ~3 km away
-                          </div>
-                        </div>
-                      </div>
-                      <div className="profile-card card-offset">
-                        <div className="card-img-placeholder card-img-2 blurred">
-                          😊<span className="blur-label">🔒 Match to reveal</span>
-                        </div>
-                        <div className="card-body">
-                          <div className="card-name-row">
-                            <span className="card-name">Sam, 24</span>
-                            <span className="card-age">+ Casey 27</span>
-                          </div>
-                          <div className="card-tags">
-                            <span className="tag c">Art</span>
-                            <span className="tag v">Travel</span>
-                          </div>
-                          <div className="card-dist">
-                            <i className="ti ti-map-pin"></i> &lt;5 km away
-                          </div>
-                        </div>
-                      </div>
+                  {(!discoverDuos || discoverDuos.length === 0 || currentDuoIndex >= discoverDuos.length) ? (
+                    <div style={{
+                      padding: '60px 40px',
+                      textAlign: 'center',
+                      background: 'rgba(255, 255, 255, 0.03)',
+                      borderRadius: '16px',
+                      border: '1px solid rgba(255, 255, 255, 0.05)',
+                      maxWidth: '600px',
+                      margin: '40px auto'
+                    }}>
+                      <div style={{ fontSize: '64px', marginBottom: '20px' }}>✨</div>
+                      <h2 style={{ fontSize: '24px', fontWeight: '600', color: '#fff' }}>Out of Profiles</h2>
+                      <p style={{ color: '#aaa', marginTop: '10px', fontSize: '15px', lineHeight: '1.5' }}>
+                        You've swiped on all available duos in your area. Check back later for new matches!
+                      </p>
                     </div>
+                  ) : (
+                    <div className="swipe-arena full-width-arena">
+                      {/* YOUR DUO */}
+                      <div className="duo-stack">
+                        <div className="duo-label">
+                          Your duo <span className="duo-badge you">YOU + FRIEND</span>
+                        </div>
+                        {/* Member 1: Partner (Gareena / Back) */}
+                        <div className="profile-card">
+                          <div className="card-img-placeholder" style={{ cursor: 'pointer' }} onClick={() => handleNextPhoto('friend')}>
+                            {partnerProfile?.photos?.length > 0 ? (
+                              <img src={getPhotoUrl(partnerProfile.photos[friendPhotoIndex])} alt={partnerProfile.name} className="card-img" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            ) : (
+                              "😊"
+                            )}
+                            {(partnerProfile?.photos?.length || 0) > 1 && (
+                              <>
+                                <button
+                                  type="button"
+                                  className="card-arrow-btn prev"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handlePrevPhoto('friend');
+                                  }}
+                                >
+                                  &lt;
+                                </button>
+                                <button
+                                  type="button"
+                                  className="card-arrow-btn next"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleNextPhoto('friend');
+                                  }}
+                                >
+                                  &gt;
+                                </button>
+                              </>
+                            )}
+                          </div>
+                          <div className="card-body">
+                            <div className="card-name-row">
+                              <span className="card-name">{partnerProfile?.name || "Partner"}, {partnerProfile?.age || 22}</span>
+                            </div>
+                            <p className="card-bio" style={{ fontSize: '13px', color: '#888', marginTop: '4px', minHeight: '32px' }}>
+                              {partnerProfile?.bio || "No bio description entered."}
+                            </p>
+                          </div>
+                        </div>
+                        {/* Member 2: Self (Alexa / Front Offset) */}
+                        <div className="profile-card card-offset">
+                          <div className="card-img-placeholder" style={{ cursor: 'pointer' }} onClick={() => handleNextPhoto('me')}>
+                            {myProfile?.photos?.length > 0 ? (
+                              <img src={getPhotoUrl(myProfile.photos[myPhotoIndex])} alt={myProfile.name} className="card-img" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            ) : (
+                              "🧑‍🎨"
+                            )}
+                            {(myProfile?.photos?.length || 0) > 1 && (
+                              <>
+                                <button
+                                  type="button"
+                                  className="card-arrow-btn prev"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handlePrevPhoto('me');
+                                  }}
+                                >
+                                  &lt;
+                                </button>
+                                <button
+                                  type="button"
+                                  className="card-arrow-btn next"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleNextPhoto('me');
+                                  }}
+                                >
+                                  &gt;
+                                </button>
+                              </>
+                            )}
+                          </div>
+                          <div className="card-body">
+                            <div className="card-name-row">
+                              <span className="card-name">{myProfile?.name || "You"}, {myProfile?.age || 22}</span>
+                            </div>
+                            <p className="card-bio" style={{ fontSize: '13px', color: '#888', marginTop: '4px', minHeight: '32px' }}>
+                              {myProfile?.bio || "No bio description entered."}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
 
-                    {/* COMPATIBILITY MATCH ZONE */}
-                    <div className="match-zone">
-                      <div className="match-indicator">
-                        <div className="match-indicator-title">Compatibility</div>
-                        <div className="match-indicator-val">73%</div>
-                        <div className="match-indicator-sub">Group score</div>
+                      {/* COMPATIBILITY MATCH ZONE */}
+                      <div className="match-zone">
+                        <div className="match-indicator">
+                          <div className="match-indicator-title">Compatibility</div>
+                          <div className="match-indicator-val">{discoverDuos[currentDuoIndex]?.compatibility || 78}%</div>
+                          <div className="match-indicator-sub">Group score</div>
+                        </div>
+                        <div className="vs-divider">VS</div>
+                        <div className="swipe-btn-group">
+                          <button type="button" className="swipe-btn nope" onClick={() => handleSwipe('pass')}>
+                            Pass
+                          </button>
+                          <button type="button" className="swipe-btn like" onClick={() => handleSwipe('like')}>
+                            ❤️ Both Like
+                          </button>
+                          <button type="button" className="swipe-btn super" onClick={() => handleSwipe('like')}>
+                            ⭐ Super Like
+                          </button>
+                        </div>
                       </div>
-                      <div className="vs-divider">VS</div>
-                      <div className="swipe-btn-group">
-                        <button type="button" className="swipe-btn nope" onClick={() => alert("Simulated: You skipped this duo.")}>
-                          Pass
-                        </button>
-                        <button type="button" className="swipe-btn like" onClick={() => setIsMatched(true)}>
-                          ❤️ Both Like
-                        </button>
-                        <button type="button" className="swipe-btn super" onClick={() => { setIsMatched(true); alert("Super Like sent!"); }}>
-                          ⭐ Super Like
-                        </button>
-                      </div>
-                    </div>
 
-                    {/* THEIR DUO */}
-                    <div className="duo-stack">
-                      <div className="duo-label">
-                        Their duo <span className="duo-badge them">THEM + FRIEND</span>
-                      </div>
-                      <div className="profile-card matched">
-                        <div className="card-img-placeholder card-img-3">👩‍💼</div>
-                        <div className="card-body">
-                          <div className="card-name-row">
-                            <span className="card-name">Morgan, 25</span>
-                            <span className="card-age">+ Riley 26</span>
+                      {/* THEIR DUO */}
+                      <div className="duo-stack">
+                        <div className="duo-label">
+                          Their duo <span className="duo-badge them">THEM + FRIEND</span>
+                        </div>
+                        {/* Member 1: Fully Visible */}
+                        <div className="profile-card matched">
+                          <div className="card-img-placeholder" style={{ cursor: 'pointer' }} onClick={() => handleOppNextPhoto(0, discoverDuos[currentDuoIndex]?.members?.[0]?.photos?.length || 0)}>
+                            {discoverDuos[currentDuoIndex]?.members?.[0]?.photos?.length > 0 ? (
+                              <img src={getPhotoUrl(discoverDuos[currentDuoIndex].members[0].photos[oppPhotoIndex0])} alt={discoverDuos[currentDuoIndex].members[0].name} className="card-img" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            ) : (
+                              "👩‍💼"
+                            )}
+                            {(discoverDuos[currentDuoIndex]?.members?.[0]?.photos?.length || 0) > 1 && (
+                              <>
+                                <button
+                                  type="button"
+                                  className="card-arrow-btn prev"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleOppPrevPhoto(0, discoverDuos[currentDuoIndex].members[0].photos.length);
+                                  }}
+                                >
+                                  &lt;
+                                </button>
+                                <button
+                                  type="button"
+                                  className="card-arrow-btn next"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleOppNextPhoto(0, discoverDuos[currentDuoIndex].members[0].photos.length);
+                                  }}
+                                >
+                                  &gt;
+                                </button>
+                              </>
+                            )}
                           </div>
-                          <div className="card-tags">
-                            <span className="tag m">Coffee</span>
-                            <span className="tag v">Books</span>
-                            <span className="tag c">Yoga</span>
-                          </div>
-                          <div className="card-dist">
-                            <i className="ti ti-map-pin"></i> &lt;2 km away
+                          <div className="card-body">
+                            <div className="card-name-row">
+                              <span className="card-name">
+                                {discoverDuos[currentDuoIndex]?.members?.[0]?.name || "User"}, {discoverDuos[currentDuoIndex]?.members?.[0]?.age || 22}
+                              </span>
+                            </div>
+                            <p className="card-bio" style={{ fontSize: '13px', color: '#888', marginTop: '4px', minHeight: '32px' }}>
+                              {discoverDuos[currentDuoIndex]?.members?.[0]?.bio || "No bio description entered."}
+                            </p>
                           </div>
                         </div>
-                      </div>
-                      <div className="profile-card card-offset" style={{ opacity: 0.5 }}>
-                        <div className="card-img-placeholder card-img-4 blurred">
-                          🙂<span className="blur-label">🔒 Match to reveal</span>
-                        </div>
-                        <div className="card-body">
-                          <div className="card-name-row">
-                            <span className="card-name">Jordan, 28</span>
-                            <span className="card-age">+ Drew 24</span>
+                        {/* Member 2: Fully Visible */}
+                        <div className="profile-card card-offset">
+                          <div className="card-img-placeholder" style={{ cursor: 'pointer' }} onClick={() => handleOppNextPhoto(1, discoverDuos[currentDuoIndex]?.members?.[1]?.photos?.length || 0)}>
+                            {discoverDuos[currentDuoIndex]?.members?.[1]?.photos?.length > 0 ? (
+                              <img src={getPhotoUrl(discoverDuos[currentDuoIndex].members[1].photos[oppPhotoIndex1])} alt={discoverDuos[currentDuoIndex].members[1].name} className="card-img" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            ) : (
+                              "🙂"
+                            )}
+                            {(discoverDuos[currentDuoIndex]?.members?.[1]?.photos?.length || 0) > 1 && (
+                              <>
+                                <button
+                                  type="button"
+                                  className="card-arrow-btn prev"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleOppPrevPhoto(1, discoverDuos[currentDuoIndex].members[1].photos.length);
+                                  }}
+                                >
+                                  &lt;
+                                </button>
+                                <button
+                                  type="button"
+                                  className="card-arrow-btn next"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleOppNextPhoto(1, discoverDuos[currentDuoIndex].members[1].photos.length);
+                                  }}
+                                >
+                                  &gt;
+                                </button>
+                              </>
+                            )}
                           </div>
-                          <div className="card-tags">
-                            <span className="tag g">Gaming</span>
-                            <span className="tag m">Fitness</span>
-                          </div>
-                          <div className="card-dist">
-                            <i className="ti ti-map-pin"></i> &lt;8 km away
+                          <div className="card-body">
+                            <div className="card-name-row">
+                              <span className="card-name">
+                                {discoverDuos[currentDuoIndex]?.members?.[1]?.name || "Partner"}, {discoverDuos[currentDuoIndex]?.members?.[1]?.age || 22}
+                              </span>
+                            </div>
+                            <p className="card-bio" style={{ fontSize: '13px', color: '#888', marginTop: '4px', minHeight: '32px' }}>
+                              {discoverDuos[currentDuoIndex]?.members?.[1]?.bio || "No bio description entered."}
+                            </p>
                           </div>
                         </div>
                       </div>
                     </div>
-                  </div>
+                  )}
 
                   <div className="step-footer text-center" style={{ marginTop: "40px", display: "flex", justifyContent: "center" }}>
                     <button type="button" className="btn-secondary" onClick={() => {
@@ -545,8 +990,8 @@ const CreateDuo = () => {
                     <div className="match-identity-bridge">
                       <div className="team-node">
                         <div className="mini-avatars">
-                          <div className="mini-avatar bg-purple">D</div>
-                          <div className="mini-avatar bg-pink">R</div>
+                          <div className="mini-avatar bg-purple">{myProfile?.name?.charAt(0).toUpperCase() || "Y"}</div>
+                          <div className="mini-avatar bg-pink">{partnerProfile?.name?.charAt(0).toUpperCase() || "P"}</div>
                         </div>
                         <span className="team-label">Your Duo</span>
                       </div>
@@ -558,24 +1003,34 @@ const CreateDuo = () => {
 
                       <div className="team-node">
                         <div className="mini-avatars">
-                          <div className="mini-avatar bg-cyan">M</div>
-                          <div className="mini-avatar bg-yellow">R</div>
+                          <div className="mini-avatar bg-cyan">{matchedDuoData?.members?.[0]?.name?.charAt(0).toUpperCase() || "T"}</div>
+                          <div className="mini-avatar bg-yellow">{matchedDuoData?.members?.[1]?.name?.charAt(0).toUpperCase() || "F"}</div>
                         </div>
-                        <span className="team-label">Morgan & Riley</span>
+                        <span className="team-label">{matchedDuoData?.members?.[0]?.name || "Their"} & {matchedDuoData?.members?.[1]?.name || "Duo"}</span>
                       </div>
                     </div>
 
                     <div className="revealed-users-grid">
-                      <div className="user-capsule-card image-placeholder-1">
+                      <div className="user-capsule-card" style={{
+                        backgroundImage: matchedDuoData?.members?.[0]?.photos?.[0] ? `url(${getPhotoUrl(matchedDuoData.members[0].photos[0])})` : 'none',
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center',
+                        position: 'relative'
+                      }}>
                         <div className="user-capsule-overlay">
-                          <span className="user-meta-name">Morgan, 25</span>
-                          <span className="user-meta-handle">@morgan.m · Designer</span>
+                          <span className="user-meta-name">{matchedDuoData?.members?.[0]?.name}, {matchedDuoData?.members?.[0]?.age}</span>
+                          <span className="user-meta-handle">{matchedDuoData?.members?.[0]?.bio ? (matchedDuoData.members[0].bio.substring(0, 30) + "...") : "No bio"}</span>
                         </div>
                       </div>
-                      <div className="user-capsule-card image-placeholder-2">
+                      <div className="user-capsule-card" style={{
+                        backgroundImage: matchedDuoData?.members?.[1]?.photos?.[0] ? `url(${getPhotoUrl(matchedDuoData.members[1].photos[0])})` : 'none',
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center',
+                        position: 'relative'
+                      }}>
                         <div className="user-capsule-overlay">
-                          <span className="user-meta-name">Riley, 26</span>
-                          <span className="user-meta-handle">@riley.r · Engineer</span>
+                          <span className="user-meta-name">{matchedDuoData?.members?.[1]?.name}, {matchedDuoData?.members?.[1]?.age}</span>
+                          <span className="user-meta-handle">{matchedDuoData?.members?.[1]?.bio ? (matchedDuoData.members[1].bio.substring(0, 30) + "...") : "No bio"}</span>
                         </div>
                       </div>
                     </div>
@@ -588,26 +1043,41 @@ const CreateDuo = () => {
                         <span className="chat-box-title">Group Chat Session</span>
                       </div>
 
-                      <div className="chat-messages-container">
-                        <div className="message-row incoming">
-                          <span className="message-sender sender-morgan">Morgan</span>
-                          <p className="message-bubble">omg hi!! we've been hoping to match with a duo like yours 🎉</p>
-                        </div>
-                        <div className="message-row incoming">
-                          <span className="message-sender sender-kiran">Riley</span>
-                          <p className="message-bubble">two devs + two designers = the perfect chaos 😄 anyone free Sunday?</p>
-                        </div>
-                        <div className="message-row outgoing">
-                          <p className="message-bubble">Sunday works! know any good rooftop spots in Koramangala? ☕</p>
-                        </div>
+                      <div className="chat-messages-container" style={{ maxHeight: '200px', overflowY: 'auto' }}>
+                        {messages.length === 0 ? (
+                          <div style={{ padding: '20px', textAlign: 'center', color: '#888', fontSize: '14px' }}>
+                            No messages yet. Say hi to start the conversation!
+                          </div>
+                        ) : (
+                          messages.map((msg, idx) => (
+                            <div key={idx} className={`message-row ${msg.senderEmail === email ? 'outgoing' : 'incoming'}`}>
+                              {msg.senderEmail !== email && (
+                                <span className="message-sender">{msg.senderName}</span>
+                              )}
+                              <p className="message-bubble">{msg.text}</p>
+                            </div>
+                          ))
+                        )}
                       </div>
+
+                      <form onSubmit={handleSendMessage} style={{ display: 'flex', gap: '8px', padding: '12px', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+                        <input
+                          type="text"
+                          className="form-input"
+                          placeholder="Type a message..."
+                          value={newMessageText}
+                          onChange={(e) => setNewMessageText(e.target.value)}
+                          style={{ flex: 1, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', borderRadius: '4px', padding: '8px 12px' }}
+                        />
+                        <button type="submit" className="btn-primary" style={{ padding: '8px 16px' }}>Send</button>
+                      </form>
                     </div>
 
                     <div className="action-buttons-group">
-                      <button type="button" className="btn-secondary" onClick={() => alert('Opening parameters...')}>
+                      <button type="button" className="btn-secondary" onClick={() => alert('Matches: Double Match verified in database.')}>
                         View match details
                       </button>
-                      <button type="button" className="btn-primary" onClick={() => window.open('/group-chat', '_blank')}>
+                      <button type="button" className="btn-primary" onClick={() => alert('Full screen chat coming soon!')}>
                         Open group chat →
                       </button>
                     </div>
