@@ -409,7 +409,10 @@ def register_swipe():
                             res = db.matches.insert_one({
                                 "duo1_id": my_duo_id,
                                 "duo2_id": target_duo_id,
-                                "created_at": datetime.now()
+                                "created_at": datetime.now(),
+                                "chat_status": "none",
+                                "initiator_email": "",
+                                "acceptances": []
                             })
                             match_id = str(res.inserted_id)
                         else:
@@ -459,15 +462,119 @@ def get_matches():
                     "photos": p.get("photos", []) if p else []
                 })
                 
+            my_members_data = []
+            for mem_email in my_duo["members"]:
+                u = db.users.find_one({"email": mem_email})
+                p = db.profiles.find_one({"email": mem_email})
+                my_members_data.append({
+                    "email": mem_email,
+                    "name": u.get("name", "User") if u else "User",
+                    "photos": p.get("photos", []) if p else []
+                })
+
             results.append({
                 "matchId": str(m["_id"]),
                 "partnerDuoId": other_duo_id,
-                "members": members_data
+                "members": members_data,
+                "myMembers": my_members_data,
+                "chatStatus": m.get("chat_status", "none"),
+                "initiatorEmail": m.get("initiator_email", ""),
+                "acceptances": m.get("acceptances", [])
             })
             
         return jsonify({"matches": results}), 200
     except Exception as e:
         print(f"[ERROR get_matches] {e}")
+        return jsonify({"message": str(e)}), 500
+
+@duo_bp.route('/api/duo/chat-requests/initiate', methods=['POST'])
+def initiate_chat_request():
+    try:
+        data = request.get_json()
+        match_id = data.get("matchId")
+        initiator_email = data.get("initiatorEmail")
+        
+        if not match_id or not initiator_email:
+            return jsonify({"message": "matchId and initiatorEmail are required"}), 400
+            
+        db = get_db()
+        db.matches.update_one(
+            {"_id": ObjectId(match_id)},
+            {"$set": {
+                "chat_status": "pending",
+                "initiator_email": initiator_email,
+                "acceptances": [initiator_email]
+            }}
+        )
+        return jsonify({"message": "Chat request initiated successfully!"}), 200
+    except Exception as e:
+        print(f"[ERROR initiate_chat_request] {e}")
+        return jsonify({"message": str(e)}), 500
+
+@duo_bp.route('/api/duo/chat-requests/accept-member', methods=['POST'])
+def accept_member_chat_request():
+    try:
+        data = request.get_json()
+        match_id = data.get("matchId")
+        member_email = data.get("memberEmail")
+        
+        if not match_id or not member_email:
+            return jsonify({"message": "matchId and memberEmail are required"}), 400
+            
+        db = get_db()
+        
+        # Add email to acceptances list
+        db.matches.update_one(
+            {"_id": ObjectId(match_id)},
+            {"$addToSet": {"acceptances": member_email}}
+        )
+        
+        # Check if all 4 accepted
+        match = db.matches.find_one({"_id": ObjectId(match_id)})
+        if match and len(match.get("acceptances", [])) >= 4:
+            db.matches.update_one(
+                {"_id": ObjectId(match_id)},
+                {"$set": {"chat_status": "active"}}
+            )
+            
+        return jsonify({"message": "Group chat acceptance recorded."}), 200
+    except Exception as e:
+        print(f"[ERROR accept_member_chat_request] {e}")
+        return jsonify({"message": str(e)}), 500
+
+@duo_bp.route('/api/duo/chat-requests/reject-match', methods=['POST'])
+def reject_match_chat_request():
+    try:
+        data = request.get_json()
+        match_id = data.get("matchId")
+        
+        if not match_id:
+            return jsonify({"message": "matchId is required"}), 400
+            
+        db = get_db()
+        
+        # Find match to get duo IDs
+        match = db.matches.find_one({"_id": ObjectId(match_id)})
+        if not match:
+            return jsonify({"message": "Match not found"}), 404
+            
+        duo1_id = match["duo1_id"]
+        duo2_id = match["duo2_id"]
+        
+        # Delete match document
+        db.matches.delete_one({"_id": ObjectId(match_id)})
+        
+        # Delete swipes between the two duos to reset their Swipe Arena state
+        db.swipes.delete_many({
+            "$or": [
+                {"swiper_duo_id": duo1_id, "target_duo_id": duo2_id},
+                {"swiper_duo_id": duo2_id, "target_duo_id": duo1_id}
+            ]
+        })
+        
+        return jsonify({"message": "Match and swipe history deleted successfully."}), 200
+    except Exception as e:
+        print(f"[ERROR reject_match_chat_request] {e}")
         return jsonify({"message": str(e)}), 500
 
 @duo_bp.route('/api/duo/messages', methods=['GET'])
