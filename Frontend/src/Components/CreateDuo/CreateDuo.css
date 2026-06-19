@@ -8,7 +8,7 @@
   --border-color: #2A2B40;
   --text-main: #F0F1FF;
   --text-muted: #7B7D9A;
-  
+
   --primary: #7b2fff;
   --primary-hover: #6322d4;
   --accent-green: #00e5c3;
@@ -203,7 +203,9 @@ button {
   font-size: 13px;
 }
 
-.w-100 { width: 100%; }
+.w-100 {
+  width: 100%;
+}
 
 /* ==========================================================================
    3. PROGRESS TIMELINE HEADER TRACKS
@@ -281,11 +283,14 @@ button {
   margin: 0;
 }
 
-.text-center { text-align: center; }
+.text-center {
+  text-align: center;
+}
 
 .text-center-adaptive {
   text-align: left;
 }
+
 .full-screen-dashboard .text-center-adaptive {
   text-align: center;
   margin-bottom: 32px;
@@ -390,12 +395,14 @@ button {
   display: flex;
   gap: 4px;
 }
+
 .gallery-pagination-dots .dot {
   width: 5px;
   height: 5px;
   border-radius: 50%;
   background-color: rgba(255, 255, 255, 0.4);
 }
+
 .gallery-pagination-dots .dot.active {
   background-color: #ffffff;
 }
@@ -427,6 +434,7 @@ button {
 .profile-avatar-wrapper.position-right {
   right: 20px;
 }
+
 .profile-avatar-wrapper.position-left {
   left: 20px;
 }
@@ -438,7 +446,8 @@ button {
   border: 1px solid var(--border-color);
   border-radius: 12px;
   padding: 16px;
-  margin-top: 32px; /* Margin creates breathing room for absolute profile circles */
+  margin-top: 32px;
+  /* Margin creates breathing room for absolute profile circles */
   box-sizing: border-box;
   transition: border-color 0.2s ease;
 }
@@ -452,12 +461,14 @@ button {
   align-items: baseline;
   margin-bottom: 6px;
 }
+
 .meta-identity h3 {
   font-size: 16px;
   font-weight: 700;
   margin: 0;
   color: var(--text-main);
 }
+
 .meta-age {
   font-size: 14px;
   color: var(--text-muted);
@@ -479,17 +490,30 @@ button {
   padding: 12px 14px;
   border-radius: 10px;
 }
+
 .margin-top-lg {
   margin-top: 32px;
 }
 
-.info-icon { color: var(--primary); font-weight: bold; }
-.info-text { font-size: 12px; color: var(--text-muted); line-height: 1.4; margin: 0; }
+.info-icon {
+  color: var(--primary);
+  font-weight: bold;
+}
+
+.info-text {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.4;
+  margin: 0;
+}
 
 /* ==========================================================================
    5. STEP 3: CONVERSATION FRAMEWORKS & COGNITIVE UNLOCKS
    ========================================================================== */
-.celebration-icon { font-size: 40px; margin-bottom: 8px; }
+.celebration-icon {
+  font-size: 40px;
+  margin-bottom: 8px;
+}
 
 .match-identity-bridge {
   display: flex;
@@ -505,7 +529,10 @@ button {
   align-items: center;
 }
 
-.mini-avatars { display: flex; }
+.mini-avatars {
+  display: flex;
+}
+
 .mini-avatar {
   width: 32px;
   height: 32px;
@@ -518,7 +545,11 @@ button {
   border: 2px solid var(--bg-card);
 }
 
-.team-label { font-size: 11px; color: var(--text-muted); margin-top: 6px; }
+.team-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 6px;
+}
 
 .connection-vector {
   display: flex;
@@ -556,13 +587,18 @@ button {
   border: 1px solid var(--border-color);
 }
 
-.image-placeholder-1 { background: linear-gradient(180deg, #2b223c 0%, #15131c 100%); }
-.image-placeholder-2 { background: linear-gradient(180deg, #142a2b 0%, #0d1617 100%); }
+.image-placeholder-1 {
+  background: linear-gradient(180deg, #2b223c 0%, #15131c 100%);
+}
+
+.image-placeholder-2 {
+  background: linear-gradient(180deg, #142a2b 0%, #0d1617 100%);
+}
 
 .user-capsule-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(0deg, rgba(0,0,0,0.85) 30%, transparent 100%);
+  background: linear-gradient(0deg, rgba(0, 0, 0, 0.85) 30%, transparent 100%);
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
@@ -570,8 +606,17 @@ button {
   text-align: left;
 }
 
-.user-meta-name { font-size: 13px; font-weight: 700; color: #fff; }
-.user-meta-handle { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+.user-meta-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.user-meta-handle {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 1px;
+}
 
 /* Group Chat Framework */
 .chat-preview-box {
@@ -592,9 +637,24 @@ button {
   border-bottom: 1px solid var(--border-color);
 }
 
-.system-status-dots { display: flex; gap: 4px; margin-right: 12px; }
-.system-status-dots span { width: 5px; height: 5px; background-color: var(--border-color); border-radius: 50%; }
-.chat-box-title { font-size: 11px; font-family: monospace; color: var(--text-muted); }
+.system-status-dots {
+  display: flex;
+  gap: 4px;
+  margin-right: 12px;
+}
+
+.system-status-dots span {
+  width: 5px;
+  height: 5px;
+  background-color: var(--border-color);
+  border-radius: 50%;
+}
+
+.chat-box-title {
+  font-size: 11px;
+  font-family: monospace;
+  color: var(--text-muted);
+}
 
 .chat-messages-container {
   padding: 14px;
@@ -603,13 +663,34 @@ button {
   gap: 12px;
 }
 
-.message-row { display: flex; flex-direction: column; max-width: 85%; }
-.message-row.incoming { align-self: flex-start; }
-.message-row.outgoing { align-self: flex-end; text-align: right; }
+.message-row {
+  display: flex;
+  flex-direction: column;
+  max-width: 85%;
+}
 
-.message-sender { font-size: 11px; font-weight: 600; margin-bottom: 2px; }
-.sender-morgan { color: var(--accent-pink); }
-.sender-kiran { color: var(--accent-yellow); }
+.message-row.incoming {
+  align-self: flex-start;
+}
+
+.message-row.outgoing {
+  align-self: flex-end;
+  text-align: right;
+}
+
+.message-sender {
+  font-size: 11px;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.sender-morgan {
+  color: var(--accent-pink);
+}
+
+.sender-kiran {
+  color: var(--accent-yellow);
+}
 
 .message-bubble {
   font-size: 13px;
@@ -737,12 +818,15 @@ button {
 .card-img-1 {
   background: linear-gradient(135deg, #1a1040, #3d1a6e);
 }
+
 .card-img-2 {
   background: linear-gradient(135deg, #401020, #6e1a3d);
 }
+
 .card-img-3 {
   background: linear-gradient(135deg, #102040, #1a5070);
 }
+
 .card-img-4 {
   background: linear-gradient(135deg, #104020, #1a6040);
 }
@@ -808,16 +892,19 @@ button {
   color: #9B6FFF;
   border: 1px solid rgba(123, 47, 255, 0.25);
 }
+
 .tag.m {
   background: rgba(0, 229, 195, 0.15);
   color: #00E5C3;
   border: 1px solid rgba(0, 229, 195, 0.25);
 }
+
 .tag.g {
   background: rgba(255, 209, 102, 0.15);
   color: #FFD166;
   border: 1px solid rgba(255, 209, 102, 0.25);
 }
+
 .tag.c {
   background: rgba(255, 77, 109, 0.15);
   color: #ff4d6d;
@@ -945,7 +1032,7 @@ button {
   font-size: 14px;
   font-weight: 700;
   color: var(--text-muted);
-  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
 
 .swipe-btn-group {
@@ -1138,7 +1225,8 @@ button {
   box-sizing: border-box;
 }
 
-.discover-landing-card, .interests-settings-card {
+.discover-landing-card,
+.interests-settings-card {
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -1234,13 +1322,25 @@ button {
 }
 
 @keyframes modalFadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes modalScaleUp {
-  from { transform: scale(0.92); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
+  from {
+    transform: scale(0.92);
+    opacity: 0;
+  }
+
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 /* Slide Swipe Transition System */
@@ -1257,6 +1357,7 @@ button {
     transform: translateX(0);
     opacity: 1;
   }
+
   100% {
     transform: translateX(-150px);
     opacity: 0;
@@ -1268,6 +1369,7 @@ button {
     transform: translateX(150px);
     opacity: 0;
   }
+
   100% {
     transform: translateX(0);
     opacity: 1;
@@ -1279,7 +1381,7 @@ button {
     flex-direction: column;
     min-height: auto;
   }
-  
+
   .lobby-sidebar {
     width: 100%;
     border-right: none;
@@ -1288,7 +1390,7 @@ button {
     flex-direction: row;
     justify-content: center;
   }
-  
+
   .lobby-main-content {
     padding: 32px 24px;
   }
@@ -1400,7 +1502,7 @@ button {
 
 .interest-card-header {
   padding: 16px;
-  border-bottom: 1px solid rgba(255,255,255,0.02);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.02);
   display: flex;
   justify-content: center;
 }
@@ -1440,7 +1542,7 @@ button {
   border: 4px solid var(--bg-card);
   overflow: hidden;
   position: absolute;
-  box-shadow: 0 8px 16px rgba(0,0,0,0.5);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
 }
 
 .avatar-frame:first-child {
@@ -1464,7 +1566,7 @@ button {
   bottom: 0;
   left: 0;
   right: 0;
-  background: linear-gradient(0deg, rgba(0,0,0,0.8) 0%, transparent 100%);
+  background: linear-gradient(0deg, rgba(0, 0, 0, 0.8) 0%, transparent 100%);
   padding: 4px 0 8px 0;
   text-align: center;
 }
@@ -1556,7 +1658,8 @@ button {
   animation: radar-pulse 2.5s infinite linear;
 }
 
-.radar-circle::before, .radar-circle::after {
+.radar-circle::before,
+.radar-circle::after {
   content: '';
   position: absolute;
   width: 100%;
@@ -1617,6 +1720,7 @@ button {
     transform: scale(0.8);
     opacity: 0.8;
   }
+
   100% {
     transform: scale(2.2);
     opacity: 0;
@@ -1624,18 +1728,24 @@ button {
 }
 
 @keyframes radar-pulse {
-  0%, 100% {
+
+  0%,
+  100% {
     box-shadow: 0 0 10px rgba(123, 47, 255, 0.1), inset 0 0 10px rgba(123, 47, 255, 0.1);
   }
+
   50% {
     box-shadow: 0 0 25px rgba(123, 47, 255, 0.3), inset 0 0 20px rgba(123, 47, 255, 0.2);
   }
 }
 
 @keyframes float-avatar {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translateY(0);
   }
+
   50% {
     transform: translateY(-6px);
   }
@@ -1667,8 +1777,16 @@ button {
     opacity: 0;
     transform: scale(0.9) translateY(10px);
   }
+
   100% {
     opacity: 1;
     transform: scale(1) translateY(0);
   }
+}
+
+.create-duo-page.chat-tab-active {
+  height: 100vh;
+  min-height: 0 !important;
+  max-height: 100vh;
+  overflow: hidden;
 }

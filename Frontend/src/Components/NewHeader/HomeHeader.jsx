@@ -10,6 +10,7 @@ const HomeHeader = () => {
     const [hasPendingInvite, setHasPendingInvite] = useState(false);
     const [incomingInvite, setIncomingInvite] = useState(null);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const [pendingGroupRequestsCount, setPendingGroupRequestsCount] = useState(0);
 
     const queryParams = new URLSearchParams(location.search);
     const activeTab = queryParams.get('tab') || 'discover';
@@ -17,7 +18,8 @@ const HomeHeader = () => {
     useEffect(() => {
         if (!email) return;
 
-        const fetchDuoStatus = async () => {
+        const fetchData = async () => {
+            // 1. Fetch duo status (invites, partner info, photo)
             try {
                 const response = await fetch(`http://localhost:3000/api/duo/status?email=${email}`);
                 const data = await response.json();
@@ -44,11 +46,27 @@ const HomeHeader = () => {
             } catch (err) {
                 console.error("HomeHeader status fetch error:", err);
             }
+
+            // 2. Fetch matches to count pending group chat requests
+            try {
+                const response = await fetch(`http://localhost:3000/api/duo/matches?email=${email}`);
+                const data = await response.json();
+                if (response.ok) {
+                    const matchesList = data.matches || [];
+                    // Count matches where chatStatus is 'pending' and user has not accepted yet
+                    const count = matchesList.filter(m => 
+                        m.chatStatus === 'pending' && !m.acceptances?.includes(email)
+                    ).length;
+                    setPendingGroupRequestsCount(count);
+                }
+            } catch (err) {
+                console.error("HomeHeader matches fetch error:", err);
+            }
         };
 
-        fetchDuoStatus();
+        fetchData();
         // Check periodically
-        const timer = setInterval(fetchDuoStatus, 5000);
+        const timer = setInterval(fetchData, 5000);
         return () => clearInterval(timer);
     }, [email]);
 
@@ -142,9 +160,12 @@ const HomeHeader = () => {
                 <button
                     className='home-nav-icon-btn'
                     title="Duo Match Chat"
-                    onClick={() => navigate('/create-duo')}
+                    onClick={() => navigate('/create-duo?tab=chat')}
                 >
                     <i className="ti ti-messages"></i>
+                    {pendingGroupRequestsCount > 0 && (
+                        <span className="home-nav-badge">{pendingGroupRequestsCount}</span>
+                    )}
                 </button>
 
                 {/* Requests Button with Dropdown */}

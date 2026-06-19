@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router';
 import HomeHeader from '../NewHeader/HomeHeader';
+import Chat from '../DuoChatRoom/Chat';
 import './CreateDuo.css';
 
 const CreateDuo = () => {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const activeTab = searchParams.get('tab') || 'discover';
 
   const [step, setStep] = useState(1);
@@ -13,6 +14,9 @@ const CreateDuo = () => {
   const [isInviteSent, setIsInviteSent] = useState(false);
   const [copyStatus, setCopyStatus] = useState('Copy');
   const [isMatched, setIsMatched] = useState(false);
+  const [showMatchPopup, setShowMatchPopup] = useState(false);
+  const [tempMatchId, setTempMatchId] = useState(null);
+  const [tempMatchedDuo, setTempMatchedDuo] = useState(null);
   const [animationClass, setAnimationClass] = useState('');
   const [interestSubTab, setInterestSubTab] = useState('incoming'); // 'incoming' or 'my_likes'
 
@@ -104,7 +108,7 @@ const CreateDuo = () => {
     const initLoad = async () => {
       try {
         await checkDuoStatus();
-        
+
         // Load interest board data
         const interestsRes = await fetch(`http://localhost:3000/api/duo/interests?email=${email}`);
         const intData = await interestsRes.json();
@@ -391,9 +395,9 @@ const CreateDuo = () => {
           const data = await response.json();
           if (response.ok) {
             if (data.matched) {
-              setMatchedDuoData(currentDuo);
-              setMatchedId(data.matchId);
-              setIsMatched(true);
+              setTempMatchedDuo(currentDuo);
+              setTempMatchId(data.matchId);
+              setShowMatchPopup(true);
               setSwipeAnimation('');
             } else {
               setCurrentDuoIndex((prev) => prev + 1);
@@ -428,13 +432,62 @@ const CreateDuo = () => {
         const data = await response.json();
         if (response.ok) {
           const matchedDuo = (interestsData.incoming_likes || []).find(d => d.id === targetDuoId) || discoverDuos.find(d => d.id === targetDuoId);
-          setMatchedDuoData(matchedDuo);
-          setMatchedId(data.matchId);
-          setIsMatched(true);
+          setTempMatchedDuo(matchedDuo);
+          setTempMatchId(data.matchId);
+          setShowMatchPopup(true);
         }
       } catch (err) {
         console.error("Match back error:", err);
       }
+    }
+  };
+  
+  const handleInitiateRequest = async () => {
+    if (!tempMatchId || !email) return;
+    try {
+      const response = await fetch('http://localhost:3000/api/duo/chat-requests/initiate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          matchId: tempMatchId,
+          initiatorEmail: email
+        })
+      });
+      if (response.ok) {
+        setShowMatchPopup(false);
+        setTempMatchId(null);
+        setTempMatchedDuo(null);
+        setSearchParams({ tab: 'chat' });
+      }
+    } catch (err) {
+      console.error("Error initiating chat request:", err);
+    }
+  };
+
+  const handleDeclineRequest = async () => {
+    if (!tempMatchId) return;
+    try {
+      const response = await fetch('http://localhost:3000/api/duo/chat-requests/reject-match', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          matchId: tempMatchId
+        })
+      });
+      if (response.ok) {
+        setShowMatchPopup(false);
+        setTempMatchId(null);
+        setTempMatchedDuo(null);
+        
+        const discoverRes = await fetch(`http://localhost:3000/api/duo/discover?email=${email}`);
+        const discoverData = await discoverRes.json();
+        if (discoverRes.ok) {
+          setDiscoverDuos(discoverData.duos || []);
+          setCurrentDuoIndex(0);
+        }
+      }
+    } catch (err) {
+      console.error("Error declining match:", err);
     }
   };
 
@@ -461,8 +514,37 @@ const CreateDuo = () => {
   const myLikes = interestsData.my_likes || [];
 
   return (
-    <div className="create-duo-page">
+    <div className={`create-duo-page ${activeTab === 'chat' ? 'chat-tab-active' : ''}`}>
       <HomeHeader />
+
+      {showMatchPopup && tempMatchedDuo && (
+        <div className="invite-modal-overlay" style={{ zIndex: 10000 }}>
+          <div className="onboarding-card text-center" style={{ maxWidth: '440px' }}>
+            <span style={{ fontSize: '48px', display: 'block', marginBottom: '16px' }}>🎉</span>
+            <h2 className="step-title">Double Match!</h2>
+            <p className="step-description" style={{ marginBottom: '24px', fontSize: '14px', lineHeight: '1.5' }}>
+              You matched with <strong>{tempMatchedDuo.members?.[0]?.name} &amp; {tempMatchedDuo.members?.[1]?.name}</strong>! 
+              Would you like to start the group chat? All members must accept to open the room.
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <button 
+                type="button" 
+                className="btn-primary w-100"
+                onClick={handleInitiateRequest}
+              >
+                Send Request to Group
+              </button>
+              <button 
+                type="button" 
+                className="btn-secondary w-100"
+                onClick={handleDeclineRequest}
+              >
+                Decline &amp; Keep Swiping
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {activeTab === 'interest' ? (
         /* ================= INTEREST BOARD VIEW ================= */
@@ -473,7 +555,7 @@ const CreateDuo = () => {
               <p className="interests-subtitle">
                 See who is interested in your duo and review the duos you liked.
               </p>
-              
+
               <div className="interests-subtabs">
                 <button
                   type="button"
@@ -507,7 +589,7 @@ const CreateDuo = () => {
                             ⭐ {duo.compatibility}% Match
                           </div>
                         </div>
-                        
+
                         <div className="interest-card-images">
                           <div className="duo-avatar-pair">
                             {duo.members.map((m, idx) => (
@@ -529,10 +611,10 @@ const CreateDuo = () => {
                               </p>
                             ))}
                           </div>
-                          
+
                           <div className="interest-card-actions">
-                            <button 
-                              type="button" 
+                            <button
+                              type="button"
                               className="btn-primary match-action-btn"
                               onClick={() => handleMatchBack(duo.id)}
                             >
@@ -558,7 +640,7 @@ const CreateDuo = () => {
                             ⭐ {duo.compatibility}% Match
                           </div>
                         </div>
-                        
+
                         <div className="interest-card-images">
                           <div className="duo-avatar-pair">
                             {duo.members.map((m, idx) => (
@@ -592,6 +674,8 @@ const CreateDuo = () => {
             </div>
           </div>
         </div>
+      ) : activeTab === 'chat' ? (
+        <Chat email={email} />
       ) : (
         /* ================= DISCOVER OR MAIN SWIPE FLOW ================= */
         <>
@@ -601,11 +685,11 @@ const CreateDuo = () => {
               <div className="discover-landing-card shadow-lg">
                 <h2 className="landing-title">Find your match. Together.</h2>
                 <p className="landing-text">
-                  To enter the Swipe Arena, you need to create a Duo profile with a friend. 
+                  To enter the Swipe Arena, you need to create a Duo profile with a friend.
                   Invite a friend now or wait for their approval.
                 </p>
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   className="btn-primary landing-cta"
                   onClick={() => setIsInviteModalOpen(true)}
                 >
@@ -671,10 +755,10 @@ const CreateDuo = () => {
                               borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
                             }}>
                               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <img 
-                                  src={getPhotoUrl(user.photo)} 
-                                  alt={user.name} 
-                                  style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover' }} 
+                                <img
+                                  src={getPhotoUrl(user.photo)}
+                                  alt={user.name}
+                                  style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover' }}
                                 />
                                 <div style={{ display: 'flex', flexDirection: 'column', textAlign: 'left' }}>
                                   <span style={{ fontSize: '14px', fontWeight: '500', color: '#fff' }}>{user.name}</span>
@@ -682,8 +766,8 @@ const CreateDuo = () => {
                                 </div>
                               </div>
                               {sentInvite?.receiver?.email === user.email ? (
-                                <button 
-                                  type="button" 
+                                <button
+                                  type="button"
                                   className="btn-secondary"
                                   style={{ padding: '4px 10px', fontSize: '12px', minHeight: 'auto', width: 'auto', cursor: 'default', opacity: 0.6 }}
                                   disabled
@@ -691,8 +775,8 @@ const CreateDuo = () => {
                                   Requested
                                 </button>
                               ) : (
-                                <button 
-                                  type="button" 
+                                <button
+                                  type="button"
                                   className="btn-primary"
                                   style={{ padding: '4px 10px', fontSize: '12px', minHeight: 'auto', width: 'auto' }}
                                   onClick={() => handleSendInvite(user.email)}
@@ -726,9 +810,9 @@ const CreateDuo = () => {
                           <p className="alert-body">
                             Waiting for <strong>{sentInvite.receiver.name}</strong> ({sentInvite.receiver.email}) to accept your invite request and enter the lobby...
                           </p>
-                          <button 
-                            type="button" 
-                            className="btn-secondary w-100" 
+                          <button
+                            type="button"
+                            className="btn-secondary w-100"
                             style={{ marginTop: '12px', padding: '8px' }}
                             onClick={() => handleCancelInvite(sentInvite.receiver.email)}
                           >
@@ -748,17 +832,17 @@ const CreateDuo = () => {
                             <strong>{incomingInvite.sender.name}</strong> ({incomingInvite.sender.email}) has invited you to be their duo partner!
                           </p>
                           <div style={{ display: 'flex', gap: '12px', marginTop: '12px' }}>
-                            <button 
-                              type="button" 
-                              className="btn-primary" 
+                            <button
+                              type="button"
+                              className="btn-primary"
                               style={{ flex: 1, padding: '8px' }}
                               onClick={() => handleAcceptInvite(incomingInvite.sender.email)}
                             >
                               Accept
                             </button>
-                            <button 
-                              type="button" 
-                              className="btn-secondary" 
+                            <button
+                              type="button"
+                              className="btn-secondary"
                               style={{ flex: 1, padding: '8px' }}
                               onClick={() => handleRejectInvite(incomingInvite.sender.email)}
                             >
@@ -794,10 +878,10 @@ const CreateDuo = () => {
                     <div className="radar-scanner-container">
                       <div className="radar-glow"></div>
                       <div className="radar-circle">
-                        <img 
-                          src={myProfile?.photos?.[0] ? getPhotoUrl(myProfile.photos[0]) : defaultAvatar} 
-                          alt="Searching..." 
-                          className="radar-avatar" 
+                        <img
+                          src={myProfile?.photos?.[0] ? getPhotoUrl(myProfile.photos[0]) : defaultAvatar}
+                          alt="Searching..."
+                          className="radar-avatar"
                         />
                       </div>
                       <h2 className="radar-title">Searching for duos...</h2>
@@ -1121,7 +1205,10 @@ const CreateDuo = () => {
                       <button type="button" className="btn-secondary" onClick={() => alert('Matches: Double Match verified in database.')}>
                         View match details
                       </button>
-                      <button type="button" className="btn-primary" onClick={() => alert('Full screen chat coming soon!')}>
+                      <button type="button" className="btn-primary" onClick={() => {
+                        setIsMatched(false);
+                        setSearchParams({ tab: 'chat' });
+                      }}>
                         Open group chat →
                       </button>
                     </div>
