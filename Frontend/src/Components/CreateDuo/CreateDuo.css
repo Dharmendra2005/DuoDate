@@ -1640,3 +1640,35 @@ button {
     transform: translateY(-6px);
   }
 }
+
+/* Swipe animations for the target duo stack */
+.duo-stack {
+  transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.3s ease;
+}
+
+.duo-stack.swipe-left-out {
+  transform: translateX(300px) rotate(15deg) translateY(30px) !important;
+  opacity: 0 !important;
+  pointer-events: none;
+}
+
+.duo-stack.swipe-right-out {
+  transform: translateX(300px) rotate(15deg) translateY(30px) !important;
+  opacity: 0 !important;
+  pointer-events: none;
+}
+
+.duo-stack.swipe-in {
+  animation: cardFadeIn 0.25s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
+}
+
+@keyframes cardFadeIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.9) translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}

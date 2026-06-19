@@ -42,6 +42,7 @@ const CreateDuo = () => {
   const [searchResults, setSearchResults] = useState([]);
   const [incomingInvite, setIncomingInvite] = useState(null);
   const [sentInvite, setSentInvite] = useState(null);
+  const [swipeAnimation, setSwipeAnimation] = useState('');
 
   // Gallery navigation states for the Step 2 dashboard view
   const [myPhotoIndex, setMyPhotoIndex] = useState(0);
@@ -367,31 +368,49 @@ const CreateDuo = () => {
     if (discoverDuos.length === 0 || currentDuoIndex >= discoverDuos.length) return;
     const currentDuo = discoverDuos[currentDuoIndex];
 
-    if (email) {
-      try {
-        const response = await fetch('http://localhost:3000/api/duo/swipe', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            swiperEmail: email,
-            targetDuoId: currentDuo.id,
-            action: action
-          })
-        });
-        const data = await response.json();
-        if (response.ok) {
-          if (data.matched) {
-            setMatchedDuoData(currentDuo);
-            setMatchedId(data.matchId);
-            setIsMatched(true);
-          } else {
-            setCurrentDuoIndex((prev) => prev + 1);
-          }
-        }
-      } catch (err) {
-        console.error("Error swiping:", err);
-      }
+    // Trigger visual slide-out animation
+    if (action === 'pass') {
+      setSwipeAnimation('swipe-left-out');
+    } else {
+      setSwipeAnimation('swipe-right-out');
     }
+
+    // Delay updates until the slide-out animation is done (300ms)
+    setTimeout(async () => {
+      if (email) {
+        try {
+          const response = await fetch('http://localhost:3000/api/duo/swipe', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              swiperEmail: email,
+              targetDuoId: currentDuo.id,
+              action: action
+            })
+          });
+          const data = await response.json();
+          if (response.ok) {
+            if (data.matched) {
+              setMatchedDuoData(currentDuo);
+              setMatchedId(data.matchId);
+              setIsMatched(true);
+              setSwipeAnimation('');
+            } else {
+              setCurrentDuoIndex((prev) => prev + 1);
+              setSwipeAnimation('swipe-in');
+              setTimeout(() => setSwipeAnimation(''), 250);
+            }
+          } else {
+            setSwipeAnimation('');
+          }
+        } catch (err) {
+          console.error("Error swiping:", err);
+          setSwipeAnimation('');
+        }
+      } else {
+        setSwipeAnimation('');
+      }
+    }, 300);
   };
 
   const handleMatchBack = async (targetDuoId) => {
@@ -662,14 +681,25 @@ const CreateDuo = () => {
                                   <span style={{ fontSize: '11px', color: '#888' }}>{user.email}</span>
                                 </div>
                               </div>
-                              <button 
-                                type="button" 
-                                className="btn-primary"
-                                style={{ padding: '4px 10px', fontSize: '12px', minHeight: 'auto', width: 'auto' }}
-                                onClick={() => handleSendInvite(user.email)}
-                              >
-                                Invite
-                              </button>
+                              {sentInvite?.receiver?.email === user.email ? (
+                                <button 
+                                  type="button" 
+                                  className="btn-secondary"
+                                  style={{ padding: '4px 10px', fontSize: '12px', minHeight: 'auto', width: 'auto', cursor: 'default', opacity: 0.6 }}
+                                  disabled
+                                >
+                                  Requested
+                                </button>
+                              ) : (
+                                <button 
+                                  type="button" 
+                                  className="btn-primary"
+                                  style={{ padding: '4px 10px', fontSize: '12px', minHeight: 'auto', width: 'auto' }}
+                                  onClick={() => handleSendInvite(user.email)}
+                                >
+                                  Invite
+                                </button>
+                              )}
                             </div>
                           ))}
                         </div>
@@ -890,7 +920,7 @@ const CreateDuo = () => {
                       </div>
 
                       {/* THEIR DUO */}
-                      <div className="duo-stack">
+                      <div className={`duo-stack ${swipeAnimation}`}>
                         <div className="duo-label">
                           Their duo <span className="duo-badge them">THEM + FRIEND</span>
                         </div>
