@@ -292,14 +292,20 @@ def discover_duos():
             
         all_other_duos = list(db.duos.find(discover_query))
         
-        # Get likes already cast by this active duo (only filter out liked duos, not passed ones)
-        duo_likes = list(db.swipes.find({"swiper_duo_id": my_duo_id, "action": "like"}))
-        liked_duo_ids = {s["target_duo_id"] for s in duo_likes}
+        # Get swipes already cast by this active duo (filter out both liked and passed duos)
+        duo_swipes = list(db.swipes.find({"swiper_duo_id": my_duo_id}))
+        swiped_duo_ids = {s["target_duo_id"] for s in duo_swipes}
+        
+        # Get candidate duos that have already passed us
+        passed_us_swipes = list(db.swipes.find({"target_duo_id": my_duo_id, "action": "pass"}))
+        passed_us_duo_ids = {s["swiper_duo_id"] for s in passed_us_swipes}
         
         results = []
         for d in all_other_duos:
             duo_id = str(d["_id"])
-            if duo_id in liked_duo_ids:
+            if duo_id in swiped_duo_ids:
+                continue
+            if duo_id in passed_us_duo_ids:
                 continue
                 
             members_data = []
