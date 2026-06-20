@@ -11,7 +11,9 @@ This repository contains both the client-side frontend and the server-side backe
 The project is split into two main components:
 
 1. **[Frontend](file:///c:/Users/lenov/Desktop/NewJourney/DuoDate/Frontend/README.md)**: A client application built with **React** and **Vite** using **React Router** and clean, responsive **Vanilla CSS**.
+ReadME file for Frontend Frontend_Process(**(file:///c:/Users/lenov/Desktop/NewJourney/DuoDate/Frontend/README.md)**)
 2. **[Backend](file:///c:/Users/lenov/Desktop/NewJourney/DuoDate/Backend/README.md)**: A modular REST API built with **Flask** and **MongoDB** featuring automatic fallback support for offline/local testing.
+ReadME file for Backend Backend_Process(**(file:///c:/Users/lenov/Desktop/NewJourney/DuoDate/Frontend/README.md)**)
 
 For detailed setup instructions and lists of features, please refer to the respective README files in their folders.
 
