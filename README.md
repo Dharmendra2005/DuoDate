@@ -68,3 +68,9 @@ npm install
 npm run dev
 ```
 Open `http://localhost:5173` in your browser to view the application.
+
+file:///C:/Users/lenov/Downloads/double_date_app_ui.html
+
+<img width="1353" height="679" alt="Screenshot 2026-06-17 000113" src="https://github.com/user-attachments/assets/33e3ce16-dd20-475d-ba64-1f6b0dde1c18" />
+
+<img width="1154" height="606" alt="Screenshot 2026-06-19 152059" src="https://github.com/user-attachments/assets/a7d10720-38fe-45ca-b3c5-c2eff4919a4d" />
