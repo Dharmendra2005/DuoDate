@@ -14,7 +14,7 @@ app.config.from_object(Config)
 
 CORS(
     app,
-    # resources={r"/*": {"origins": "https://datawithduo.onrender.com"}}"
+    resources={r"/*": {"origins": "https://datesduo.onrender.com"}}"
 )
 
 os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
