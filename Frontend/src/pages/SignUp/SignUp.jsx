@@ -73,7 +73,7 @@ const SignUpPage = () => {
       birthDate: formData.birthDate,
       password: formData.password,
     };
-    const url = "http://localhost:3000/signup";
+    const url = `${import.meta.env.VITE_API_URL}/signup`;
 
     const options = {
       method: "POST",
