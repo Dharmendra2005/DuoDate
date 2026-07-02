@@ -12,7 +12,10 @@ from routes.duo import duo_bp
 app = Flask(__name__)
 app.config.from_object(Config)
 
-CORS(app)
+CORS(
+    app,
+    resources={r"/*": {"origins": "https://datawithduo.onrender.com"}}"
+)
 
 os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
 
